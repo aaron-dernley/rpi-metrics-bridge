@@ -241,7 +241,16 @@ jobs:
 
                 echo "# HELP rpi_boot_config_eeprom_content_hash Low 32 bits of sha256(BOOT_ORDER|BOOT_UART|POWER_OFF_ON_HALT|WAKE_ON_GPIO|PSU_MAX_CURRENT) as an unsigned decimal integer. Not a real measurement -- a change-detection fingerprint. Alert on changes(...[24h]) > 0, not on the value itself."
                 echo "# TYPE rpi_boot_config_eeprom_content_hash gauge"
-                BOOTCFG_FINGERPRINT="${{ data.latest('bootconfig-local','eeprom').attributes.bootOrderRaw }}|${{ data.latest('bootconfig-local','eeprom').attributes.bootUart }}|${{ data.latest('bootconfig-local','eeprom').attributes.powerOffOnHalt }}|${{ data.latest('bootconfig-local','eeprom').attributes.wakeOnGpio }}|${{ data.latest('bootconfig-local','eeprom').attributes.psuMaxCurrentMa }}"
+                # bootOrderRaw is free text lifted verbatim from the EEPROM config
+                # file (rpi_boot_config.ts's parser does not validate its shape) and
+                # gets spliced into this double-quoted shell assignment at CEL
+                # template-substitution time, before /bin/sh ever parses the script --
+                # so it must be validated here, in CEL, not after substitution (by
+                # then it's too late: a stray '"'/'`'/'$()' would already be live
+                # script text, not data). Anything that doesn't match a plain hex
+                # token falls back to a fixed sentinel, which still changes the
+                # fingerprint on drift without ever risking unsafe characters.
+                BOOTCFG_FINGERPRINT="${{ data.latest('bootconfig-local','eeprom').attributes.bootOrderRaw != null && data.latest('bootconfig-local','eeprom').attributes.bootOrderRaw.matches('^[0-9a-fA-Fx]*$') ? data.latest('bootconfig-local','eeprom').attributes.bootOrderRaw : 'unrecognized' }}|${{ data.latest('bootconfig-local','eeprom').attributes.bootUart }}|${{ data.latest('bootconfig-local','eeprom').attributes.powerOffOnHalt }}|${{ data.latest('bootconfig-local','eeprom').attributes.wakeOnGpio }}|${{ data.latest('bootconfig-local','eeprom').attributes.psuMaxCurrentMa }}"
                 if [ "$BOOTCFG_FINGERPRINT" != "|||" ]; then
                   HASH_HEX=$(printf '%s' "$BOOTCFG_FINGERPRINT" | sha256sum | cut -c1-8)
                   echo "rpi_boot_config_eeprom_content_hash $(printf '%d' "0x$HASH_HEX")"
