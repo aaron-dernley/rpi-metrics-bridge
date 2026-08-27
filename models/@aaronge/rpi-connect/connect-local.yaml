@@ -1,0 +1,8 @@
+type: '@aaronge/rpi-connect'
+typeVersion: 2026.08.26.1
+id: 19c62fa8-8e43-43a5-895a-4e2e898f7340
+name: connect-local
+version: 1
+tags: {}
+globalArguments: {}
+methods: {}

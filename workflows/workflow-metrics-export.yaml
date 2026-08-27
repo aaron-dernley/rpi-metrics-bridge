@@ -1,0 +1,360 @@
+id: a788f813-d3da-457d-8c8f-e2aecb4643fb
+name: metrics-export
+description: >-
+  Collect from all 10 pulled rpi-*/host-health/apt-inventory extensions and
+  write a Prometheus textfile-collector .prom file for node_exporter to
+  serve. Deliberately has NO assert job: this workflow must never fail — a
+  dead sensor degrades to a stale/absent series (see
+  rpi_metrics_bridge_capture_age_seconds), never a blank metrics file. Every
+  collect step is allowFailure: true for exactly that reason. Nullable
+  source fields (null = unknown, per this whole family's convention) render
+  as an absent series for that scrape, never a guessed 0/false — a blank
+  line in Prometheus text-exposition format is legal and simply omits that
+  metric. See README.md for the full field-scope table and why each
+  omitted field was deferred to v2.
+version: 1
+tags: {}
+trigger:
+  schedule: "*-*-* *:*:00"
+jobs:
+  - name: collect
+    description: >-
+      One step per source method, all in parallel, each independently
+      allowFailure: true so one dead sensor can't blank the whole file.
+    dependsOn: []
+    steps:
+      - name: readThrottle
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: health-local
+          methodName: readThrottle
+        dependsOn: []
+      - name: readClocks
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: health-local
+          methodName: readClocks
+        dependsOn: []
+      - name: readPmic
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: health-local
+          methodName: readPmic
+        dependsOn: []
+      - name: readFilesystems
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: host-local
+          methodName: readFilesystems
+        dependsOn: []
+      - name: readThermal
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: host-local
+          methodName: readThermal
+        dependsOn: []
+      - name: readLoad
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: host-local
+          methodName: readLoad
+        dependsOn: []
+      - name: readMemory
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: host-local
+          methodName: readMemory
+        dependsOn: []
+      - name: readEeprom
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: bootconfig-local
+          methodName: readEeprom
+        dependsOn: []
+      - name: readCooling
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: cooling-local
+          methodName: readCooling
+        dependsOn: []
+      - name: readPcie
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: pcie-local
+          methodName: readPcie
+        dependsOn: []
+      - name: aptQuery
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: apt-local
+          methodName: query
+        dependsOn: []
+      - name: aptListUpgradable
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: apt-local
+          methodName: listUpgradable
+        dependsOn: []
+      - name: readRtc
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: rtc-local
+          methodName: readRtc
+        dependsOn: []
+      - name: readConnect
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: connect-local
+          methodName: readConnect
+        dependsOn: []
+      - name: readGpio
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: gpio-local
+          methodName: readGpio
+        dependsOn: []
+      - name: readCameras
+        allowFailure: true
+        task:
+          type: model_method
+          modelIdOrName: camera-local
+          methodName: readCameras
+        dependsOn: []
+
+  - name: export
+    description: >-
+      Render the .prom file and atomically replace it. Depends on collect
+      only via "completed" (not "succeeded"), so it always runs and writes
+      whatever is available — the "degrade to partial results, never to
+      silence" pattern every report job in this family already uses.
+    dependsOn:
+      - job: collect
+        condition:
+          type: completed
+    steps:
+      - name: writeTextfile
+        task:
+          type: model_method
+          modelType: "command/shell"
+          modelName: metrics-export-writer
+          methodName: execute
+          inputs:
+            run: |
+              set -eu
+              DEST_DIR=/var/lib/prometheus/node-exporter
+              TMP=$(mktemp "$DEST_DIR/.rpi_metrics.prom.XXXXXX")
+              trap 'rm -f "$TMP"' EXIT
+
+              # age_seconds CAPTURED_AT_ISO_OR_EMPTY — prints an integer age
+              # in seconds, or nothing (metric omitted) if the arg is empty
+              # (source never collected) or unparseable.
+              age_seconds() {
+                [ -n "$1" ] || return 0
+                local ts
+                ts=$(date -d "$1" +%s 2>/dev/null) || return 0
+                echo $(( $(date +%s) - ts ))
+              }
+
+              {
+                echo "# HELP rpi_health_throttle_healthy 1 if vcgencmd get_throttled bitfield is entirely clear (no fault now or since boot)."
+                echo "# TYPE rpi_health_throttle_healthy gauge"
+                [ -n "${{ data.latest('health-local','throttle').attributes.healthy }}" ] && echo "rpi_health_throttle_healthy $( [ "${{ data.latest('health-local','throttle').attributes.healthy }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_health_undervoltage_since_boot 1 if a sticky under-voltage fault has latched since boot."
+                echo "# TYPE rpi_health_undervoltage_since_boot gauge"
+                [ -n "${{ data.latest('health-local','throttle').attributes.sinceBoot.underVoltage }}" ] && echo "rpi_health_undervoltage_since_boot $( [ "${{ data.latest('health-local','throttle').attributes.sinceBoot.underVoltage }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_health_arm_freq_capped_since_boot 1 if sticky ARM frequency capping has latched since boot."
+                echo "# TYPE rpi_health_arm_freq_capped_since_boot gauge"
+                [ -n "${{ data.latest('health-local','throttle').attributes.sinceBoot.armFrequencyCapped }}" ] && echo "rpi_health_arm_freq_capped_since_boot $( [ "${{ data.latest('health-local','throttle').attributes.sinceBoot.armFrequencyCapped }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_health_throttled_since_boot 1 if sticky throttling has latched since boot."
+                echo "# TYPE rpi_health_throttled_since_boot gauge"
+                [ -n "${{ data.latest('health-local','throttle').attributes.sinceBoot.throttled }}" ] && echo "rpi_health_throttled_since_boot $( [ "${{ data.latest('health-local','throttle').attributes.sinceBoot.throttled }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_health_soft_temp_limit_reached_since_boot 1 if the sticky soft temperature limit has latched since boot."
+                echo "# TYPE rpi_health_soft_temp_limit_reached_since_boot gauge"
+                [ -n "${{ data.latest('health-local','throttle').attributes.sinceBoot.softTempLimitReached }}" ] && echo "rpi_health_soft_temp_limit_reached_since_boot $( [ "${{ data.latest('health-local','throttle').attributes.sinceBoot.softTempLimitReached }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_health_core_temp_celsius SoC core temperature via vcgencmd."
+                echo "# TYPE rpi_health_core_temp_celsius gauge"
+                [ -n "${{ data.latest('health-local','clocks').attributes.coreTempCelsius }}" ] && echo "rpi_health_core_temp_celsius ${{ data.latest('health-local','clocks').attributes.coreTempCelsius }}"
+
+                echo "# HELP rpi_health_core_volts Core voltage via vcgencmd."
+                echo "# TYPE rpi_health_core_volts gauge"
+                [ -n "${{ data.latest('health-local','clocks').attributes.coreVolts }}" ] && echo "rpi_health_core_volts ${{ data.latest('health-local','clocks').attributes.coreVolts }}"
+
+                echo "# HELP rpi_health_arm_hertz ARM clock frequency."
+                echo "# TYPE rpi_health_arm_hertz gauge"
+                [ -n "${{ data.latest('health-local','clocks').attributes.armHertz }}" ] && echo "rpi_health_arm_hertz ${{ data.latest('health-local','clocks').attributes.armHertz }}"
+
+                echo "# HELP rpi_health_supply_volts EXT5V_V, the PSU-delivered supply voltage. Absent when unreadable, never a guessed 0."
+                echo "# TYPE rpi_health_supply_volts gauge"
+                [ -n "${{ data.latest('health-local','pmic').attributes.supplyVolts }}" ] && echo "rpi_health_supply_volts ${{ data.latest('health-local','pmic').attributes.supplyVolts }}"
+
+                echo "# HELP rpi_health_pmic_battery_volts BATT_V, the PMIC's own view of the RTC coin-cell (see rpi_rtc_battery_volts for the more direct RTC-chip reading). Absent when unreadable."
+                echo "# TYPE rpi_health_pmic_battery_volts gauge"
+                [ -n "${{ data.latest('health-local','pmic').attributes.batteryVolts }}" ] && echo "rpi_health_pmic_battery_volts ${{ data.latest('health-local','pmic').attributes.batteryVolts }}"
+
+                echo "# HELP rpi_health_estimated_total_watts Sum of PMIC rail watts. Systematically understates real draw (no main-5V current sensor) -- a relative trend, not an absolute wattmeter."
+                echo "# TYPE rpi_health_estimated_total_watts gauge"
+                [ -n "${{ data.latest('health-local','pmic').attributes.estimatedTotalWatts }}" ] && echo "rpi_health_estimated_total_watts ${{ data.latest('health-local','pmic').attributes.estimatedTotalWatts }}"
+
+                echo "# HELP rpi_cooling_fan_rpm PWM fan tachometer reading."
+                echo "# TYPE rpi_cooling_fan_rpm gauge"
+                [ -n "${{ data.latest('cooling-local','cooling').attributes.rpm }}" ] && echo "rpi_cooling_fan_rpm ${{ data.latest('cooling-local','cooling').attributes.rpm }}"
+
+                echo "# HELP rpi_cooling_fan_pwm_percent PWM fan commanded duty cycle, 0-100."
+                echo "# TYPE rpi_cooling_fan_pwm_percent gauge"
+                [ -n "${{ data.latest('cooling-local','cooling').attributes.pwmPercent }}" ] && echo "rpi_cooling_fan_pwm_percent ${{ data.latest('cooling-local','cooling').attributes.pwmPercent }}"
+
+                echo "# HELP rpi_cooling_fan_stalled 1 if the fan is commanded to spin (pwmDuty>0) but the tachometer reports 0 RPM -- the alarm condition this extension exists to catch."
+                echo "# TYPE rpi_cooling_fan_stalled gauge"
+                [ -n "${{ data.latest('cooling-local','cooling').attributes.stalled }}" ] && echo "rpi_cooling_fan_stalled $( [ "${{ data.latest('cooling-local','cooling').attributes.stalled }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_cooling_state Current discrete thermal cooling step. Absent when no matching cooling_device was found (not a fault)."
+                echo "# TYPE rpi_cooling_state gauge"
+                [ -n "${{ data.latest('cooling-local','cooling').attributes.coolingState }}" ] && echo "rpi_cooling_state ${{ data.latest('cooling-local','cooling').attributes.coolingState }}"
+
+                echo "# HELP rpi_cooling_max_state Highest valid discrete cooling step. Absent under the same condition as rpi_cooling_state."
+                echo "# TYPE rpi_cooling_max_state gauge"
+                [ -n "${{ data.latest('cooling-local','cooling').attributes.maxCoolingState }}" ] && echo "rpi_cooling_max_state ${{ data.latest('cooling-local','cooling').attributes.maxCoolingState }}"
+
+                echo "# HELP rpi_pcie_link_degraded 1 if any PCIe device's negotiated speed/width is below its capable speed/width."
+                echo "# TYPE rpi_pcie_link_degraded gauge"
+                [ -n "${{ data.latest('pcie-local','pcie').attributes.linkDegraded }}" ] && echo "rpi_pcie_link_degraded $( [ "${{ data.latest('pcie-local','pcie').attributes.linkDegraded }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_boot_config_eeprom_content_hash Low 32 bits of sha256(BOOT_ORDER|BOOT_UART|POWER_OFF_ON_HALT|WAKE_ON_GPIO|PSU_MAX_CURRENT) as an unsigned decimal integer. Not a real measurement -- a change-detection fingerprint. Alert on changes(...[24h]) > 0, not on the value itself."
+                echo "# TYPE rpi_boot_config_eeprom_content_hash gauge"
+                BOOTCFG_FINGERPRINT="${{ data.latest('bootconfig-local','eeprom').attributes.bootOrderRaw }}|${{ data.latest('bootconfig-local','eeprom').attributes.bootUart }}|${{ data.latest('bootconfig-local','eeprom').attributes.powerOffOnHalt }}|${{ data.latest('bootconfig-local','eeprom').attributes.wakeOnGpio }}|${{ data.latest('bootconfig-local','eeprom').attributes.psuMaxCurrentMa }}"
+                if [ "$BOOTCFG_FINGERPRINT" != "|||" ]; then
+                  HASH_HEX=$(printf '%s' "$BOOTCFG_FINGERPRINT" | sha256sum | cut -c1-8)
+                  echo "rpi_boot_config_eeprom_content_hash $(printf '%d' "0x$HASH_HEX")"
+                fi
+
+                echo "# HELP host_root_used_percent Root filesystem used percent."
+                echo "# TYPE host_root_used_percent gauge"
+                [ -n "${{ data.latest('host-local','filesystems').attributes.rootUsedPercent }}" ] && echo "host_root_used_percent ${{ data.latest('host-local','filesystems').attributes.rootUsedPercent }}"
+
+                echo "# HELP host_worst_used_percent Highest used percent across all non-virtual mounts."
+                echo "# TYPE host_worst_used_percent gauge"
+                [ -n "${{ data.latest('host-local','filesystems').attributes.worstUsedPercent }}" ] && echo "host_worst_used_percent ${{ data.latest('host-local','filesystems').attributes.worstUsedPercent }}"
+
+                echo "# HELP host_max_thermal_celsius Highest sysfs thermal zone reading. Absent when no thermal zones are exposed (a valid state, not a fault)."
+                echo "# TYPE host_max_thermal_celsius gauge"
+                [ -n "${{ data.latest('host-local','thermal').attributes.maxCelsius }}" ] && echo "host_max_thermal_celsius ${{ data.latest('host-local','thermal').attributes.maxCelsius }}"
+
+                echo "# HELP host_memory_used_percent Memory used percent, based on MemAvailable."
+                echo "# TYPE host_memory_used_percent gauge"
+                [ -n "${{ data.latest('host-local','memory').attributes.usedPercent }}" ] && echo "host_memory_used_percent ${{ data.latest('host-local','memory').attributes.usedPercent }}"
+
+                echo "# HELP host_swap_used_bytes Swap used, in bytes."
+                echo "# TYPE host_swap_used_bytes gauge"
+                [ -n "${{ data.latest('host-local','memory').attributes.swapUsedBytes }}" ] && echo "host_swap_used_bytes ${{ data.latest('host-local','memory').attributes.swapUsedBytes }}"
+
+                echo "# HELP host_load1 1-minute load average."
+                echo "# TYPE host_load1 gauge"
+                [ -n "${{ data.latest('host-local','load').attributes.load1 }}" ] && echo "host_load1 ${{ data.latest('host-local','load').attributes.load1 }}"
+
+                echo "# HELP host_load5 5-minute load average."
+                echo "# TYPE host_load5 gauge"
+                [ -n "${{ data.latest('host-local','load').attributes.load5 }}" ] && echo "host_load5 ${{ data.latest('host-local','load').attributes.load5 }}"
+
+                echo "# HELP host_load15 15-minute load average."
+                echo "# TYPE host_load15 gauge"
+                [ -n "${{ data.latest('host-local','load').attributes.load15 }}" ] && echo "host_load15 ${{ data.latest('host-local','load').attributes.load15 }}"
+
+                echo "# HELP host_load5_per_core_ratio 5-minute load average divided by logical core count."
+                echo "# TYPE host_load5_per_core_ratio gauge"
+                [ -n "${{ data.latest('host-local','load').attributes.load5PerCore }}" ] && echo "host_load5_per_core_ratio ${{ data.latest('host-local','load').attributes.load5PerCore }}"
+
+                echo "# HELP host_runnable_procs Currently runnable process/thread count."
+                echo "# TYPE host_runnable_procs gauge"
+                [ -n "${{ data.latest('host-local','load').attributes.runnable }}" ] && echo "host_runnable_procs ${{ data.latest('host-local','load').attributes.runnable }}"
+
+                echo "# HELP host_total_procs Total process/thread count."
+                echo "# TYPE host_total_procs gauge"
+                [ -n "${{ data.latest('host-local','load').attributes.totalProcs }}" ] && echo "host_total_procs ${{ data.latest('host-local','load').attributes.totalProcs }}"
+
+                echo "# HELP apt_installed_packages Number of installed packages."
+                echo "# TYPE apt_installed_packages gauge"
+                [ -n "${{ data.latest('apt-local','installed').attributes.count }}" ] && echo "apt_installed_packages ${{ data.latest('apt-local','installed').attributes.count }}"
+
+                echo "# HELP apt_upgradable_packages Number of packages apt would upgrade right now."
+                echo "# TYPE apt_upgradable_packages gauge"
+                [ -n "${{ data.latest('apt-local','upgradable').attributes.count }}" ] && echo "apt_upgradable_packages ${{ data.latest('apt-local','upgradable').attributes.count }}"
+
+                echo "# HELP apt_security_upgradable_packages Number of pending upgrades classified security-relevant by apt."
+                echo "# TYPE apt_security_upgradable_packages gauge"
+                [ -n "${{ data.latest('apt-local','upgradable').attributes.securityCount }}" ] && echo "apt_security_upgradable_packages ${{ data.latest('apt-local','upgradable').attributes.securityCount }}"
+
+                echo "# HELP rpi_rtc_drift_seconds System clock minus RTC clock, in seconds. A few seconds is normal; minutes means trouble."
+                echo "# TYPE rpi_rtc_drift_seconds gauge"
+                [ -n "${{ data.latest('rtc-local','rtc').attributes.driftSeconds }}" ] && echo "rpi_rtc_drift_seconds ${{ data.latest('rtc-local','rtc').attributes.driftSeconds }}"
+
+                echo "# HELP rpi_rtc_battery_volts The RTC chip's own coin-cell voltage (not the PMIC's view -- see rpi_health_pmic_battery_volts). Absent when unreadable."
+                echo "# TYPE rpi_rtc_battery_volts gauge"
+                [ -n "${{ data.latest('rtc-local','rtc').attributes.batteryVolts }}" ] && echo "rpi_rtc_battery_volts ${{ data.latest('rtc-local','rtc').attributes.batteryVolts }}"
+
+                echo "# HELP rpi_rtc_system_clock_synchronized 1 if the system clock is currently NTP-synchronized. Absent when timedatectl is unavailable."
+                echo "# TYPE rpi_rtc_system_clock_synchronized gauge"
+                [ -n "${{ data.latest('rtc-local','rtc').attributes.systemClockSynchronized }}" ] && echo "rpi_rtc_system_clock_synchronized $( [ "${{ data.latest('rtc-local','rtc').attributes.systemClockSynchronized }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_connect_signed_in 1 if signed in to Raspberry Pi Connect. Absent when unparseable."
+                echo "# TYPE rpi_connect_signed_in gauge"
+                [ -n "${{ data.latest('connect-local','connect').attributes.signedIn }}" ] && echo "rpi_connect_signed_in $( [ "${{ data.latest('connect-local','connect').attributes.signedIn }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_connect_remote_shell_enabled 1 if Raspberry Pi Connect remote shell is enabled. Absent when not reported (notably including the common signed-out case)."
+                echo "# TYPE rpi_connect_remote_shell_enabled gauge"
+                [ -n "${{ data.latest('connect-local','connect').attributes.remoteShellEnabled }}" ] && echo "rpi_connect_remote_shell_enabled $( [ "${{ data.latest('connect-local','connect').attributes.remoteShellEnabled }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_connect_screen_sharing_enabled 1 if Raspberry Pi Connect screen sharing is enabled. Absent under the same condition as rpi_connect_remote_shell_enabled."
+                echo "# TYPE rpi_connect_screen_sharing_enabled gauge"
+                [ -n "${{ data.latest('connect-local','connect').attributes.screenSharingEnabled }}" ] && echo "rpi_connect_screen_sharing_enabled $( [ "${{ data.latest('connect-local','connect').attributes.screenSharingEnabled }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_gpio_pin_count Total GPIO pins reported by pinctrl get, across all gpiochips."
+                echo "# TYPE rpi_gpio_pin_count gauge"
+                [ -n "${{ data.latest('gpio-local','gpio').attributes.pinCount }}" ] && echo "rpi_gpio_pin_count ${{ data.latest('gpio-local','gpio').attributes.pinCount }}"
+
+                echo "# HELP rpi_camera_count Number of CSI cameras detected by rpicam-hello. Zero is a valid, normal reading, not a fault."
+                echo "# TYPE rpi_camera_count gauge"
+                [ -n "${{ data.latest('camera-local','cameras').attributes.cameraCount }}" ] && echo "rpi_camera_count ${{ data.latest('camera-local','cameras').attributes.cameraCount }}"
+
+                echo "# HELP rpi_camera_output_recognized 1 if rpicam-hello's output matched a known shape (zero-camera message or a header-line format). 0 means cameraCount above should not be trusted."
+                echo "# TYPE rpi_camera_output_recognized gauge"
+                [ -n "${{ data.latest('camera-local','cameras').attributes.outputRecognized }}" ] && echo "rpi_camera_output_recognized $( [ "${{ data.latest('camera-local','cameras').attributes.outputRecognized }}" = "true" ] && echo 1 || echo 0 )"
+
+                echo "# HELP rpi_metrics_bridge_capture_age_seconds Seconds since each source's capturedAt. A stuck-but-still-running bridge shows this rising for one source while node_textfile_mtime_seconds stays fresh; a fully-stuck bridge shows both stale."
+                echo "# TYPE rpi_metrics_bridge_capture_age_seconds gauge"
+                v=$(age_seconds "${{ data.latest('health-local','clocks').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"health-local\"} $v"
+                v=$(age_seconds "${{ data.latest('host-local','load').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"host-local\"} $v"
+                v=$(age_seconds "${{ data.latest('bootconfig-local','eeprom').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"bootconfig-local\"} $v"
+                v=$(age_seconds "${{ data.latest('cooling-local','cooling').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"cooling-local\"} $v"
+                v=$(age_seconds "${{ data.latest('pcie-local','pcie').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"pcie-local\"} $v"
+                v=$(age_seconds "${{ data.latest('apt-local','installed').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"apt-local\"} $v"
+                v=$(age_seconds "${{ data.latest('rtc-local','rtc').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"rtc-local\"} $v"
+                v=$(age_seconds "${{ data.latest('connect-local','connect').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"connect-local\"} $v"
+                v=$(age_seconds "${{ data.latest('gpio-local','gpio').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"gpio-local\"} $v"
+                v=$(age_seconds "${{ data.latest('camera-local','cameras').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"camera-local\"} $v"
+              } > "$TMP"
+
+              chmod 644 "$TMP"
+              mv -f "$TMP" "$DEST_DIR/rpi_metrics.prom"
+              trap - EXIT
+              echo "wrote $DEST_DIR/rpi_metrics.prom ($(wc -l < "$DEST_DIR/rpi_metrics.prom") lines)"
+        dependsOn: []

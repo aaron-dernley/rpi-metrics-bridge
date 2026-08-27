@@ -1,0 +1,8 @@
+type: '@aaronge/rpi-rtc'
+typeVersion: 2026.08.26.1
+id: d851f1cd-07c1-48c2-8eb2-1b89c347be3f
+name: rtc-local
+version: 1
+tags: {}
+globalArguments: {}
+methods: {}

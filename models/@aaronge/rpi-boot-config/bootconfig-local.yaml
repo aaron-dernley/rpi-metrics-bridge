@@ -1,0 +1,8 @@
+type: '@aaronge/rpi-boot-config'
+typeVersion: 2026.08.26.1
+id: 7b01d086-9935-4cd8-b5a7-6bb6be5598b7
+name: bootconfig-local
+version: 1
+tags: {}
+globalArguments: {}
+methods: {}

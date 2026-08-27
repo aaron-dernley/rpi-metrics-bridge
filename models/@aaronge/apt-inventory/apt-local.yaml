@@ -1,0 +1,8 @@
+type: '@aaronge/apt-inventory'
+typeVersion: 2026.08.25.5
+id: 6c83c316-14ce-4306-b6ea-918227a28e04
+name: apt-local
+version: 1
+tags: {}
+globalArguments: {}
+methods: {}

@@ -1,0 +1,8 @@
+type: '@aaronge/rpi-gpio-inventory'
+typeVersion: 2026.08.26.1
+id: b7a0a69e-1831-4520-ae5e-e13c93269412
+name: gpio-local
+version: 1
+tags: {}
+globalArguments: {}
+methods: {}

@@ -1,0 +1,8 @@
+type: '@aaronge/rpi-health'
+typeVersion: 2026.08.26.1
+id: d81b8afb-e361-497b-a79e-92d7da14dfb1
+name: health-local
+version: 1
+tags: {}
+globalArguments: {}
+methods: {}

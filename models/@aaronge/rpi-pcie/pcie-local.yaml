@@ -1,0 +1,8 @@
+type: '@aaronge/rpi-pcie'
+typeVersion: 2026.08.26.1
+id: a9df5204-2e5e-4c3e-a802-4cf9511b3052
+name: pcie-local
+version: 1
+tags: {}
+globalArguments: {}
+methods: {}

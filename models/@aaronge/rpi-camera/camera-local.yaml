@@ -1,0 +1,8 @@
+type: '@aaronge/rpi-camera'
+typeVersion: 2026.08.26.1
+id: 62bfdbf0-f835-4788-8984-ab97fe0897d3
+name: camera-local
+version: 1
+tags: {}
+globalArguments: {}
+methods: {}

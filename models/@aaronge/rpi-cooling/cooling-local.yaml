@@ -1,0 +1,8 @@
+type: '@aaronge/rpi-cooling'
+typeVersion: 2026.08.26.1
+id: 01e7d537-98eb-43da-83ef-e2f878d9e314
+name: cooling-local
+version: 1
+tags: {}
+globalArguments: {}
+methods: {}
