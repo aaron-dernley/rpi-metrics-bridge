@@ -107,6 +107,17 @@ jobs:
           modelIdOrName: apt-local
           methodName: listUpgradable
         dependsOn: []
+      # aptScanVulnerabilities deliberately NOT run here. It calls dpkg
+      # --compare-versions as a separate subprocess per flagged entry
+      # (up to ~967 spawns as of 2026-10-01) — fine on its own slower
+      # cadence, but running it every 60 seconds routinely pushed this
+      # workflow's total runtime to 2-3 minutes, causing datastore lock
+      # contention and intermittent report failures on every export. Now
+      # runs independently every 15 minutes via apt-vulnerability-scan —
+      # see that workflow's description. The apt_vulnerabilities_* export
+      # lines below are unchanged: data.latest('apt-local',
+      # 'vulnerabilities') reads whatever that workflow last wrote,
+      # visible here regardless of which workflow produced it.
       - name: readRtc
         allowFailure: true
         task:
@@ -311,6 +322,18 @@ jobs:
                 echo "# HELP apt_security_upgradable_packages Number of pending upgrades classified security-relevant by apt."
                 echo "# TYPE apt_security_upgradable_packages gauge"
                 [ -n "${{ data.latest('apt-local','upgradable').attributes.securityCount }}" ] && echo "apt_security_upgradable_packages ${{ data.latest('apt-local','upgradable').attributes.securityCount }}"
+
+                echo "# HELP apt_vulnerabilities_total Total CVE/package entries debsecan reports against installed packages."
+                echo "# TYPE apt_vulnerabilities_total gauge"
+                [ -n "${{ data.latest('apt-local','vulnerabilities').attributes.count }}" ] && echo "apt_vulnerabilities_total ${{ data.latest('apt-local','vulnerabilities').attributes.count }}"
+
+                echo "# HELP apt_vulnerabilities_actionable Real, currently-fixable vulnerabilities (fixAvailableInSuite && !actuallyFixed)."
+                echo "# TYPE apt_vulnerabilities_actionable gauge"
+                [ -n "${{ data.latest('apt-local','vulnerabilities').attributes.actionableCount }}" ] && echo "apt_vulnerabilities_actionable ${{ data.latest('apt-local','vulnerabilities').attributes.actionableCount }}"
+
+                echo "# HELP apt_vulnerabilities_false_positive debsecan-flagged entries dpkg's own version comparison shows are already patched (see apt-inventory's actuallyFixed logic)."
+                echo "# TYPE apt_vulnerabilities_false_positive gauge"
+                [ -n "${{ data.latest('apt-local','vulnerabilities').attributes.falsePositiveCount }}" ] && echo "apt_vulnerabilities_false_positive ${{ data.latest('apt-local','vulnerabilities').attributes.falsePositiveCount }}"
 
                 echo "# HELP rpi_rtc_drift_seconds System clock minus RTC clock, in seconds. A few seconds is normal; minutes means trouble."
                 echo "# TYPE rpi_rtc_drift_seconds gauge"
