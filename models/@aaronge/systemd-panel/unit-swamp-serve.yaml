@@ -1,5 +1,5 @@
 type: '@aaronge/systemd-panel'
-typeVersion: 2026.10.01.3
+typeVersion: 2026.11.05.1
 id: 6e5f8566-3f8e-4438-86d8-b407b59e83d2
 name: unit-swamp-serve
 version: 1
