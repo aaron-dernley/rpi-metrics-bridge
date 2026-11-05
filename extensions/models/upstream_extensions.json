@@ -91,8 +91,8 @@
     "publishedChannel": "stable"
   },
   "@aaronge/rpi-rtc": {
-    "version": "2026.11.05.1",
-    "pulledAt": "2026-11-05T12:49:40.927Z",
+    "version": "2026.11.05.2",
+    "pulledAt": "2026-11-05T15:33:19.771Z",
     "files": [
       ".swamp/pulled-extensions/@aaronge/rpi-rtc/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-rtc/files/README.md",
@@ -100,8 +100,8 @@
       ".swamp/pulled-extensions/@aaronge/rpi-rtc/models/rpi_rtc.ts",
       ".swamp/pulled-extensions/@aaronge/rpi-rtc/workflows/workflow-rpi-rtc.yaml"
     ],
-    "checksum": "b532fedf2dc2bd645d4a27ea1581e9942cc98ab35917bdb6112292fa2e0eebca",
-    "filesChecksum": "d31bccb24ebb825d3eaefd8e1f0cb87d698ca1c6bf91417540e9a4ea7b96729e",
+    "checksum": "217b6153fa60d9c79679d3273abefb9d803fdc85e5cf07037ab48c384fe905cd",
+    "filesChecksum": "dc664631153ad85b88ad6a4ce08f8cc5333a9387bf9b2eef679751ffe19fff60",
     "serverUrl": "https://swamp-club.com",
     "publishedChannel": "stable"
   },

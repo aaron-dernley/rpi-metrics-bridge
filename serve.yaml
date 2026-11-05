@@ -12,14 +12,6 @@ hot-reload: true
 # docs/swamp-ops-best-practices.md). Each entry replaces that workflow's
 # built-in trigger, so restate its schedule.
 triggers:
-  # No RTC coin cell is fitted on this Pi: the J5 battery input reads about
-  # 0.008 V. lowBatteryVolts=0 turns off only the battery assert. The drift
-  # check against NTP still runs, and rpi_rtc_battery_volts is still
-  # exported. Remove this entry if a battery is ever fitted.
-  "@aaronge/rpi-rtc":
-    schedule: "*/5 * * * *"
-    inputs:
-      lowBatteryVolts: 0
   # Hourly instead of daily. These inventories change rarely, and their
   # models are already read every 5 minutes by metrics-export, so the
   # extra runs cost about a second each.

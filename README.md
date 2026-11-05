@@ -190,10 +190,8 @@ manual references.
 - **`serve.yaml`** (repo root, version-controlled): port 9090, one
   scheduled run at a time, a 15-minute `max-run-duration` and hot-reload.
   A `triggers:` block there overrides a pulled workflow's schedule or
-  inputs without republishing it. Today it turns off rpi-rtc's battery
-  assert (`lowBatteryVolts: 0`, because no coin cell is fitted; its drift
-  check still runs), runs the three daily inventories hourly, and runs
-  fleet-health every 5 minutes.
+  inputs without republishing it. Today it runs the three daily
+  inventories hourly and fleet-health every 5 minutes.
 - **GC:** `.swamp.yaml` sets `autoGc: true`, which applies each
   extension's declared version caps at write time, and
   `garbageCollection.automatic`, which runs an hourly retention pass.
@@ -205,7 +203,7 @@ manual references.
 | `metrics-export` | `*/5 * * * *` | this repo |
 | `apt-vulnerability-scan` | `*/15 * * * *` | this repo |
 | `thermal-integrity`, `power-integrity`, `link-integrity` | `*/5 * * * *` | this repo (moved from `rpi-workflows`) |
-| `@aaronge/rpi-health`, `rpi-connect`, `rpi-cooling`, `rpi-pcie`, `rpi-rtc`, `host-health` | `*/5 * * * *` | pulled packages (rpi-rtc's battery assert off via `serve.yaml`) |
+| `@aaronge/rpi-health`, `rpi-connect`, `rpi-cooling`, `rpi-pcie`, `rpi-rtc`, `host-health` | `*/5 * * * *` | pulled packages (`rtc-local` declares `batteryFitted: false`, so rpi-rtc skips its battery check) |
 | `@aaronge/rpi-boot-config`, `rpi-camera`, `rpi-gpio-inventory` | hourly at :17 / :51 / :43 | pulled packages (daily by default; hourly via `serve.yaml`) |
 | `@aaronge/apt-report` | `0 6,12,20 * * *` | pulled package |
 | `@aaronge/fleet-health` | every 5 min at :03, :08, … | pulled package (every 10 min by default; `serve.yaml` override; watches `unit-swamp-serve`) |
