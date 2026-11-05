@@ -47,16 +47,18 @@ the full tree, and `swamp help model method run` scopes to a subtree.
 
 1. **This repo has no extension of its own.** Same pattern as the sibling
    `rpi-workflows` repo: no `manifest.yaml`, no `extensions/models/`.
-   Nothing here is published as a `@aaronge/*` extension — this repo exists
-   purely to pull the 10 already-published `@aaronge/*` extensions and
-   export their latest data as a Prometheus textfile-collector `.prom`
-   file for `node_exporter`/Grafana. New Pi-specific *observation* logic
-   belongs in its own single-purpose extension repo; new dashboard panels
-   or exported metrics belong here.
+   Nothing here is published as a `@aaronge/*` extension. This repo pulls
+   the published `@aaronge/*` extensions, runs every scheduled workflow
+   they ship (see rule 4), and exports the rpi/host/apt family's latest
+   data as a Prometheus textfile-collector `.prom` file for
+   `node_exporter`/Grafana. New Pi-specific *observation* logic belongs in
+   its own single-purpose extension repo, shipped with its workflow, and
+   pulled here; new dashboard panels, exported metrics and cross-extension
+   workflows belong here.
 2. **README at repo root**, same as the sibling repos, documenting the
    metric naming scheme, which pulled models/instances feed which metrics,
    the infra wiring (Prometheus, node_exporter, Grafana), and the
-   systemd timer schedule.
+   schedule of every workflow the ops serve runs.
 3. **The `export` job must never fail.** `workflows/workflow-metrics-export.yaml`
    has no `assert` steps and every `collect` step sets `allowFailure: true`
    deliberately — a dead sensor should degrade to a stale reading (visible

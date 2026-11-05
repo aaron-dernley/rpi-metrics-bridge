@@ -42,9 +42,23 @@ have moved.
 
 - swamp ships its own daemon manager, which is EXPERIMENTAL:
   `swamp serve daemon enable`. The generated Linux unit uses
-  `Restart=always` and `RestartSec=10`. Without `--user` it goes to
-  `/etc/systemd/system/` and starts at boot.
+  `Restart=always` and `RestartSec=10`, and sets `SWAMP_HOME` and
+  `SWAMP_CONFIG_DIR`. The manual says that without `--user` it goes to
+  `/etc/systemd/system/`. On this Pi, running it as `aaronge` without
+  `--user` installed a **user** unit
+  (`~/.config/systemd/user/swamp-serve.service`) and said so. A user unit
+  only starts at boot with `loginctl enable-linger aaronge`, which is set.
+  Its flags (`--repo-dir`, `--config serve.yaml`) are baked into the unit;
+  re-run `enable` to change them.
   (manual/reference/swamp-serve/daemon, manual/how-to/swamp-serve/run-as-system-daemon)
+- **systemd memory limits do nothing on this Pi.** The kernel cmdline has
+  `cgroup_disable=memory` (the Raspberry Pi OS default), so a `MemoryHigh`/
+  `MemoryMax` drop-in is silently ignored. The old `swamp-workflow-*`
+  `memory.conf` drop-in never protected anything. Memory protection here
+  comes from swamp itself: `max-concurrent-scheduled-runs: 1`,
+  `max-run-duration` and `autoGc`. Real limits need `cgroup_enable=memory`
+  added to `/boot/firmware/cmdline.txt` and a reboot. Observed serve
+  memory: about 0.85 GB RSS steady, with a 2.0 GB peak.
 - A hand-written unit must set `HOME`, or `SWAMP_HOME` plus
   `SWAMP_CONFIG_DIR`. Otherwise pulled-extension workflows fail with
   `Unknown model type`.
