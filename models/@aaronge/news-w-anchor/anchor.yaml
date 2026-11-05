@@ -1,0 +1,11 @@
+type: '@aaronge/news-w-anchor'
+typeVersion: 2026.09.09.1
+id: 1a986b7e-df21-4074-9fa8-cf3ea031ff87
+name: anchor
+version: 1
+tags: {}
+globalArguments:
+  webhookUrl: '${{ vault.get(news-secrets, DISCORD_WEBHOOK_URL) }}'
+  # Live posting authorized 2026-09-09 for testing before publish.
+  dryRun: false
+methods: {}

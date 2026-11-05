@@ -1,0 +1,12 @@
+type: '@aaronge/iss-tracker'
+typeVersion: 2026.08.28.1
+id: 463fc615-f325-4f75-b3a6-7efa16c89de5
+name: my-location
+version: 1
+tags: {}
+globalArguments:
+  latitude: 51.5074
+  longitude: -0.1278
+  thresholdKm: 2200
+  apiUrl: 'http://api.open-notify.org/iss-now.json'
+methods: {}

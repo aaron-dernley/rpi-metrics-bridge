@@ -63,3 +63,9 @@ the full tree, and `swamp help model method run` scopes to a subtree.
    via `rpi_metrics_bridge_capture_age_seconds`), not blank the whole
    `.prom` file. Don't add an `assert` step or flip `allowFailure` to
    `false` without re-reading this reasoning.
+4. **This is the Pi's single ops repo.** One `swamp serve` here runs every
+   scheduled `@aaronge/*` workflow. Don't use systemd timers or per-repo
+   serves, and never add `--no-telemetry`. Read
+   `docs/swamp-ops-best-practices.md` before changing schedules, serve
+   config, GC or concurrency. It summarises the swamp-club manual for this
+   setup.

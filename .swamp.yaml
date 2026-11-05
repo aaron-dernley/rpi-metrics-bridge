@@ -4,3 +4,16 @@ repoId: 8d8826ad-c7b5-478f-8a4b-f97b75c329e9
 tools:
   - claude
 gitignoreManaged: true
+# Enforce each extension's declared per-data version caps at write time.
+# Without this the caps were never applied, and 2.85M stale versions
+# (41.6 GB) built up until metrics-export ran out of memory (2026-11-05).
+autoGc: true
+# swamp serve runs an age-based retention pass 5 minutes after start, then
+# hourly. `data` is deliberately unset: it can delete latest versions.
+garbageCollection:
+  automatic: true
+  workflowRuns: 7d
+  evaluatedSnapshots: 3d
+  outputs: 7d
+  audit: 30d
+  bookkeeping: 24h

@@ -1,0 +1,87 @@
+id: c5ad5563-ed4e-4fed-96af-13b663c0cfbf
+name: thermal-integrity
+description: >-
+  Cross-model integrity check: if core temperature exceeds
+  tempThresholdCelsius, the fan (@aaronge/rpi-cooling) had better be
+  spinning. Catches a dead fan before it becomes a thermal event, by
+  joining @aaronge/rpi-health's temperature reading with
+  @aaronge/rpi-cooling's RPM in a single assert expression — just two
+  data.latest() calls combined with &&/||, no special join primitive
+  needed. Scheduled every 5 minutes, matching both source extensions'
+  own cadence.
+version: 1
+tags: {}
+trigger:
+  schedule: "*/5 * * * *"
+inputs:
+  properties:
+    tempThresholdCelsius:
+      type: number
+      default: 60
+      description: >-
+        Core temperature above which the fan must be spinning. Matches
+        @aaronge/rpi-health's tempSoftLimitCelsius default.
+jobs:
+  - name: collect
+    description: Read core temperature and fan state in parallel.
+    dependsOn: []
+    steps:
+      - name: readClocks
+        task:
+          type: model_method
+          modelIdOrName: health-local
+          methodName: readClocks
+        dependsOn: []
+      - name: readCooling
+        task:
+          type: model_method
+          modelIdOrName: cooling-local
+          methodName: readCooling
+        dependsOn: []
+
+  - name: assert
+    description: Fail the run when it's hot and the fan isn't spinning.
+    dependsOn:
+      - job: collect
+        condition:
+          type: completed
+    steps:
+      - name: fan-runs-when-hot
+        allowFailure: false
+        task:
+          type: assert
+          expr: >-
+            data.latest("health-local", "clocks").attributes.coreTempCelsius
+            <= inputs.tempThresholdCelsius
+            || data.latest("cooling-local", "cooling").attributes.rpm > 0
+          message: >-
+            coreTempCelsius=${{ data.latest("health-local", "clocks").attributes.coreTempCelsius }}C
+            exceeds tempThresholdCelsius=${{ inputs.tempThresholdCelsius }}C
+            but fan rpm=${{ data.latest("cooling-local", "cooling").attributes.rpm }}
+            (pwmPercent=${{ data.latest("cooling-local", "cooling").attributes.pwmPercent }}%) —
+            the SoC is hot and the fan isn't spinning. Catch this before
+            thermal throttling, not after.
+          severity: high
+        dependsOn: []
+
+  - name: report
+    description: >-
+      Print a one-screen summary. Depends on collect only (not assert), so
+      it still runs when an assertion fails.
+    dependsOn:
+      - job: collect
+        condition:
+          type: completed
+    steps:
+      - name: summarize
+        task:
+          type: model_method
+          modelType: "command/shell"
+          modelName: thermal-integrity-summary
+          methodName: execute
+          inputs:
+            run: >-
+              echo "thermal-integrity" &&
+              echo "  coreTempCelsius: ${{ data.latest('health-local', 'clocks').attributes.coreTempCelsius }}C (threshold ${{ inputs.tempThresholdCelsius }}C)" &&
+              echo "  fan rpm: ${{ data.latest('cooling-local', 'cooling').attributes.rpm }} (${{ data.latest('cooling-local', 'cooling').attributes.pwmPercent }}% duty, stalled=${{ data.latest('cooling-local', 'cooling').attributes.stalled }})"
+        dependsOn: []

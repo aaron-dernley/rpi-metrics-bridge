@@ -1,0 +1,6 @@
+id: 0cd5a502-3ea8-40bd-9f73-0b83ac2c4dc3
+name: news-secrets
+type: local_encryption
+config:
+  auto_generate: true
+createdAt: '2026-11-05T12:51:09.152Z'

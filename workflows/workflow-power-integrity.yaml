@@ -1,0 +1,102 @@
+id: c8f483ec-006e-4971-b7af-fe8b5d1ed01a
+name: power-integrity
+description: >-
+  Cross-model integrity check: two independent witnesses to the same
+  underlying power problem — @aaronge/rpi-health's sticky under-voltage
+  fault bit, and its PMIC supply-rail voltage. A third witness
+  (smartctl's unsafe_shutdowns counter on the NVMe SSD, once installed —
+  most directly relevant given a 4.6W drive on a ~5W-budget PCIe slot)
+  is deliberately NOT included yet: smartctl isn't installed and there's
+  no SSD on this machine as of writing. Add a readSmart-equivalent step
+  and a third assert clause once the NVMe migration happens — see
+  @aaronge/rpi-pcie's own README for the same "build the rest once the
+  hardware exists" pattern. Scheduled every 5 minutes, matching
+  @aaronge/rpi-health's own cadence.
+version: 1
+tags: {}
+trigger:
+  schedule: "*/5 * * * *"
+inputs:
+  properties:
+    minSupplyVolts:
+      type: number
+      default: 4.8
+      description: >-
+        EXT5V_V floor before concern. Matches @aaronge/rpi-health's
+        minSupplyVolts default.
+jobs:
+  - name: collect
+    description: Read throttle and PMIC state in parallel.
+    dependsOn: []
+    steps:
+      - name: readThrottle
+        task:
+          type: model_method
+          modelIdOrName: health-local
+          methodName: readThrottle
+        dependsOn: []
+      - name: readPmic
+        task:
+          type: model_method
+          modelIdOrName: health-local
+          methodName: readPmic
+        dependsOn: []
+
+  - name: assert
+    description: >-
+      Fail the run when either power witness looks bad. Two separate
+      assert steps rather than one combined expression, so the report
+      distinguishes which witness actually fired.
+    dependsOn:
+      - job: collect
+        condition:
+          type: completed
+    steps:
+      - name: no-under-voltage-since-boot
+        allowFailure: false
+        task:
+          type: assert
+          expr: >-
+            data.latest("health-local", "throttle").attributes.sinceBoot.underVoltage
+            == false
+          message: >-
+            Sticky under-voltage fault latched since boot (raw=${{ data.latest("health-local", "throttle").attributes.raw }}) —
+            a brownout happened at some point, even if the supply reads
+            fine right now. Stays red until reboot; that's correct, not a bug.
+          severity: high
+        dependsOn: []
+      - name: supply-volts-ok
+        allowFailure: false
+        task:
+          type: assert
+          expr: >-
+            data.latest("health-local", "pmic").attributes.supplyVolts
+            > inputs.minSupplyVolts
+          message: >-
+            supplyVolts=${{ data.latest("health-local", "pmic").attributes.supplyVolts }}V
+            <= minSupplyVolts=${{ inputs.minSupplyVolts }}V.
+          severity: high
+        dependsOn: []
+
+  - name: report
+    description: >-
+      Print a one-screen summary. Depends on collect only (not assert), so
+      it still runs when an assertion fails.
+    dependsOn:
+      - job: collect
+        condition:
+          type: completed
+    steps:
+      - name: summarize
+        task:
+          type: model_method
+          modelType: "command/shell"
+          modelName: power-integrity-summary
+          methodName: execute
+          inputs:
+            run: >-
+              echo "power-integrity" &&
+              echo "  throttle raw: ${{ data.latest('health-local', 'throttle').attributes.raw }} (sinceBoot.underVoltage=${{ data.latest('health-local', 'throttle').attributes.sinceBoot.underVoltage }})" &&
+              echo "  supplyVolts: ${{ data.latest('health-local', 'pmic').attributes.supplyVolts }}V (threshold ${{ inputs.minSupplyVolts }}V)" &&
+              echo "  NOTE: smartctl unsafe_shutdowns witness not yet added -- no NVMe SSD installed"
+        dependsOn: []

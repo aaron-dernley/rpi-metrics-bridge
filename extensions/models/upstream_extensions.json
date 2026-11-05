@@ -1,143 +1,285 @@
 {
   "@aaronge/rpi-health": {
-    "version": "2026.08.26.1",
-    "pulledAt": "2026-08-27T14:22:43.666Z",
+    "version": "2026.11.05.2",
+    "pulledAt": "2026-11-05T12:49:35.515Z",
     "files": [
-      ".swamp/bundles/c102d01f/rpi_health.js",
+      ".swamp/pulled-extensions/@aaronge/rpi-health/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-health/files/README.md",
       ".swamp/pulled-extensions/@aaronge/rpi-health/manifest.yaml",
-      ".swamp/pulled-extensions/@aaronge/rpi-health/models/rpi_health.ts"
+      ".swamp/pulled-extensions/@aaronge/rpi-health/models/rpi_health.ts",
+      ".swamp/pulled-extensions/@aaronge/rpi-health/workflows/workflow-rpi-health.yaml"
     ],
-    "checksum": "77588191d447eb440b68c9b247fdb29508913fd807e19a4bc315bfdb238d439c",
-    "filesChecksum": "8a3d14c1b94d5282be58777ffdf959c76416a78ee1c307953fdaae4d7b084b25",
-    "serverUrl": "https://swamp-club.com"
+    "checksum": "f48696da52c901f8cb1174ac2a7a9cc88dded369e7dd95e306aced532aff06f4",
+    "filesChecksum": "6ddac133e10c95edd7cd98f9b3b542a8cb6ebe926ee4c539b02221d5d50e6a1f",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   },
   "@aaronge/host-health": {
-    "version": "2026.08.26.3",
-    "pulledAt": "2026-08-27T14:22:48.221Z",
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:36.499Z",
     "files": [
-      ".swamp/bundles/9f62a0e4/host_health.js",
       ".swamp/pulled-extensions/@aaronge/host-health/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/host-health/files/README.md",
       ".swamp/pulled-extensions/@aaronge/host-health/manifest.yaml",
-      ".swamp/pulled-extensions/@aaronge/host-health/models/host_health.ts"
+      ".swamp/pulled-extensions/@aaronge/host-health/models/host_health.ts",
+      ".swamp/pulled-extensions/@aaronge/host-health/workflows/workflow-host-health.yaml"
     ],
-    "checksum": "14ac120091fcf5cd7eea1cdc68bdf0d50cd8c8c8032f859cd990a5e7faa282ee",
-    "filesChecksum": "0de1e4fac1e6dba2464ecb412da7c8d78d1f599027e6c2f74688335125a4ac11",
-    "serverUrl": "https://swamp-club.com"
+    "checksum": "975ba9c8948c4203bc79ba7a9260133fe1200f350287cce68c9de22ae4b748e4",
+    "filesChecksum": "4d857ba50d2a28a3f428b0cbfeaa12439d0ea4dc3367001808298125c92c9f7e",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   },
   "@aaronge/rpi-boot-config": {
-    "version": "2026.08.26.1",
-    "pulledAt": "2026-08-27T14:22:52.626Z",
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:37.520Z",
     "files": [
-      ".swamp/bundles/54c4eb7a/rpi_boot_config.js",
       ".swamp/pulled-extensions/@aaronge/rpi-boot-config/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-boot-config/files/README.md",
       ".swamp/pulled-extensions/@aaronge/rpi-boot-config/manifest.yaml",
-      ".swamp/pulled-extensions/@aaronge/rpi-boot-config/models/rpi_boot_config.ts"
+      ".swamp/pulled-extensions/@aaronge/rpi-boot-config/models/rpi_boot_config.ts",
+      ".swamp/pulled-extensions/@aaronge/rpi-boot-config/workflows/workflow-rpi-boot-config.yaml"
     ],
-    "checksum": "c7308627a199c527cbde12cddf1fab253eb81a4a60b967807173b523766df12d",
-    "filesChecksum": "8a12326197528657cf5a7109770a6f23b72e170fbfaec9c44b25ad230a01cd53",
-    "serverUrl": "https://swamp-club.com"
+    "checksum": "33e3acb453633b2ddbca0a31e022535fe865284b398bfe57a909c4f6bb3e9885",
+    "filesChecksum": "af07667a600d790ab41f5fca664b48aed5c45219351515fe0366936e97f98698",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   },
   "@aaronge/rpi-cooling": {
-    "version": "2026.08.26.1",
-    "pulledAt": "2026-08-27T14:22:56.799Z",
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:38.302Z",
     "files": [
-      ".swamp/bundles/b0128188/rpi_cooling.js",
       ".swamp/pulled-extensions/@aaronge/rpi-cooling/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-cooling/files/README.md",
       ".swamp/pulled-extensions/@aaronge/rpi-cooling/manifest.yaml",
-      ".swamp/pulled-extensions/@aaronge/rpi-cooling/models/rpi_cooling.ts"
+      ".swamp/pulled-extensions/@aaronge/rpi-cooling/models/rpi_cooling.ts",
+      ".swamp/pulled-extensions/@aaronge/rpi-cooling/workflows/workflow-rpi-cooling.yaml"
     ],
-    "checksum": "ef1643564da70417dd01abfb3f7f4cfdb74a63124f9d4509540559cc046314c0",
-    "filesChecksum": "2c15ab7c96a253018caa37169f1ce03850680ace87243c2f41c2cdb6a644b376",
-    "serverUrl": "https://swamp-club.com"
+    "checksum": "78b1804e7a2bbf0ad45d0a773162ad256f0a6f15aad3c6d0b78212c9445c11ab",
+    "filesChecksum": "daed393d8aa4344a9bbf13805eddcd173900687ce76eb20a33a1eec23825ffc1",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   },
   "@aaronge/rpi-pcie": {
-    "version": "2026.08.26.1",
-    "pulledAt": "2026-08-27T14:23:01.118Z",
+    "version": "2026.11.05.2",
+    "pulledAt": "2026-11-05T12:49:39.106Z",
     "files": [
-      ".swamp/bundles/c384f76c/rpi_pcie.js",
       ".swamp/pulled-extensions/@aaronge/rpi-pcie/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-pcie/files/README.md",
       ".swamp/pulled-extensions/@aaronge/rpi-pcie/manifest.yaml",
-      ".swamp/pulled-extensions/@aaronge/rpi-pcie/models/rpi_pcie.ts"
+      ".swamp/pulled-extensions/@aaronge/rpi-pcie/models/rpi_pcie.ts",
+      ".swamp/pulled-extensions/@aaronge/rpi-pcie/workflows/workflow-rpi-pcie.yaml"
     ],
-    "checksum": "fdf01b656a84deefa9c116d8c2dd69b5dd55573ded6174fb6f8ba8117a55428f",
-    "filesChecksum": "3a343bcfa815dce45ce89b54abe539d03cb479d20ebbb1f2ae42811f9f8a6217",
-    "serverUrl": "https://swamp-club.com"
+    "checksum": "cb3ab725bee4b376bb28bdf316485964c2d1236615230bd54ac629fe0c2eb122",
+    "filesChecksum": "793b3ad4102c7f1bfd3b78be6c8ed557789127e5657648cc3cf205aec505f8df",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   },
   "@aaronge/apt-inventory": {
-    "version": "2026.08.25.1",
-    "pulledAt": "2026-08-27T14:23:05.613Z",
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:40.126Z",
     "files": [
-      ".swamp/bundles/bfa874bb/apt.js",
       ".swamp/pulled-extensions/@aaronge/apt-inventory/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/apt-inventory/files/README.md",
       ".swamp/pulled-extensions/@aaronge/apt-inventory/manifest.yaml",
       ".swamp/pulled-extensions/@aaronge/apt-inventory/models/apt.ts",
       ".swamp/pulled-extensions/@aaronge/apt-inventory/reports/apt_delta.ts",
-      ".swamp/report-bundles/16a63318/apt_delta.js"
+      ".swamp/pulled-extensions/@aaronge/apt-inventory/workflows/workflow-apt-report.yaml"
     ],
-    "checksum": "d33b0e6a5dc640870731135f249308caf5139a46e524e8eb128234bc7f900ead",
-    "filesChecksum": "7c4ea79fe7db22678ca895b8d574b0a0680ca46067e52c9c958ad586a6e035b5",
-    "serverUrl": "https://swamp-club.com"
+    "checksum": "9f8d7c72de81866deeb386a953ab76d92283d001982fc4a765e134020dfeee66",
+    "filesChecksum": "ab84e4f3333436aa4d156de80b228b9a9be2110d082fcebbdebb8f71a906a08f",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   },
   "@aaronge/rpi-rtc": {
-    "version": "2026.08.26.1",
-    "pulledAt": "2026-08-27T14:23:10.141Z",
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:40.927Z",
     "files": [
-      ".swamp/bundles/5e9adadc/rpi_rtc.js",
       ".swamp/pulled-extensions/@aaronge/rpi-rtc/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-rtc/files/README.md",
       ".swamp/pulled-extensions/@aaronge/rpi-rtc/manifest.yaml",
-      ".swamp/pulled-extensions/@aaronge/rpi-rtc/models/rpi_rtc.ts"
+      ".swamp/pulled-extensions/@aaronge/rpi-rtc/models/rpi_rtc.ts",
+      ".swamp/pulled-extensions/@aaronge/rpi-rtc/workflows/workflow-rpi-rtc.yaml"
     ],
-    "checksum": "f1b42f36074dfac7c9fa4807b396769f3bb269b081c566601947802ca19ea7de",
-    "filesChecksum": "72ec215e03cd3c1cbe5fbe83334e5b3613ed28fb7d61264518d622a9304ee9ec",
-    "serverUrl": "https://swamp-club.com"
+    "checksum": "b532fedf2dc2bd645d4a27ea1581e9942cc98ab35917bdb6112292fa2e0eebca",
+    "filesChecksum": "d31bccb24ebb825d3eaefd8e1f0cb87d698ca1c6bf91417540e9a4ea7b96729e",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   },
   "@aaronge/rpi-connect": {
-    "version": "2026.08.26.1",
-    "pulledAt": "2026-08-27T14:23:14.383Z",
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:41.982Z",
     "files": [
-      ".swamp/bundles/3bf3c85f/rpi_connect.js",
       ".swamp/pulled-extensions/@aaronge/rpi-connect/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-connect/files/README.md",
       ".swamp/pulled-extensions/@aaronge/rpi-connect/manifest.yaml",
-      ".swamp/pulled-extensions/@aaronge/rpi-connect/models/rpi_connect.ts"
+      ".swamp/pulled-extensions/@aaronge/rpi-connect/models/rpi_connect.ts",
+      ".swamp/pulled-extensions/@aaronge/rpi-connect/workflows/workflow-rpi-connect.yaml"
     ],
-    "checksum": "47a490d7b1ec653204971085e6b5c5950c43b79c739649bb2035332e4bc51fa4",
-    "filesChecksum": "a39ce97cbf3e3f8aeb5bb94caa4f80ad3cd0e313a03a34eaa1923a7c3c93d396",
-    "serverUrl": "https://swamp-club.com"
+    "checksum": "6b462fbe33ecf99f70cb95a616e4d0fbdaf4cc3e6a412a68693cf1fc53242a9f",
+    "filesChecksum": "feb10e44c193653a54e2e4c81e6fef0f4f6cb481d3d17aba8806d2ce0461a6d9",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   },
   "@aaronge/rpi-gpio-inventory": {
-    "version": "2026.08.26.1",
-    "pulledAt": "2026-08-27T14:23:18.659Z",
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:42.797Z",
     "files": [
-      ".swamp/bundles/71028d4f/rpi_gpio_inventory.js",
       ".swamp/pulled-extensions/@aaronge/rpi-gpio-inventory/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-gpio-inventory/files/README.md",
       ".swamp/pulled-extensions/@aaronge/rpi-gpio-inventory/manifest.yaml",
-      ".swamp/pulled-extensions/@aaronge/rpi-gpio-inventory/models/rpi_gpio_inventory.ts"
+      ".swamp/pulled-extensions/@aaronge/rpi-gpio-inventory/models/rpi_gpio_inventory.ts",
+      ".swamp/pulled-extensions/@aaronge/rpi-gpio-inventory/workflows/workflow-rpi-gpio-inventory.yaml"
     ],
-    "checksum": "92a8d2369f0a6d760c032c388b1ae4e29e78cfcb44f93d563a82eae1f95b5fb1",
-    "filesChecksum": "3832fe36dfcd14665a592a25353652dab36d76417890f24098aa234e4a50cfbb",
-    "serverUrl": "https://swamp-club.com"
+    "checksum": "0ed7e658a4943ee16b430af05ce25e702806b005345c3b6f571b78023b857cb9",
+    "filesChecksum": "c10e4de39094dac9060e784ba5f9e2f3b9f6a8a43c6a26ede3978f5dfe126128",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   },
   "@aaronge/rpi-camera": {
-    "version": "2026.08.26.1",
-    "pulledAt": "2026-08-27T14:23:23.045Z",
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:43.580Z",
     "files": [
-      ".swamp/bundles/c0c28928/rpi_camera.js",
       ".swamp/pulled-extensions/@aaronge/rpi-camera/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-camera/files/README.md",
       ".swamp/pulled-extensions/@aaronge/rpi-camera/manifest.yaml",
-      ".swamp/pulled-extensions/@aaronge/rpi-camera/models/rpi_camera.ts"
+      ".swamp/pulled-extensions/@aaronge/rpi-camera/models/rpi_camera.ts",
+      ".swamp/pulled-extensions/@aaronge/rpi-camera/workflows/workflow-rpi-camera.yaml"
     ],
-    "checksum": "387e535abeca27595650ab475d0d2ab8b259466661aad5d27e8019479175bb24",
-    "filesChecksum": "09111bb9b4171ac6f9db1d93df17cb0e00e9803c71db5efe5a3668b03c2c48ac",
+    "checksum": "00d0f62519a26f5117ccfc2fe6301f3e905aabd8609f8ba85928ba6d38a495f4",
+    "filesChecksum": "c628100a0f03c58fdccc376dff268b216c3896a47697e8e5a451901cc62068b0",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
+  },
+  "@aaronge/obsidian-atlas": {
+    "version": "2026.08.26.1",
+    "pulledAt": "2026-08-27T15:25:12.165Z",
+    "files": [
+      ".swamp/pulled-extensions/@aaronge/obsidian-atlas/files/LICENSE",
+      ".swamp/pulled-extensions/@aaronge/obsidian-atlas/files/README.md",
+      ".swamp/pulled-extensions/@aaronge/obsidian-atlas/manifest.yaml",
+      ".swamp/pulled-extensions/@aaronge/obsidian-atlas/models/obsidian_atlas.ts"
+    ],
+    "checksum": "e86bf76ec099b587c0a357d10e8f5a75bcb165e42214fd8470243f0c351e23b0",
+    "filesChecksum": "017a0f71d37c92d1d4451bacfbbd413218791988e54d16f6ed6bb3c669334080",
     "serverUrl": "https://swamp-club.com"
+  },
+  "@aaronge/can-i-hang-my-washing-out": {
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:48.098Z",
+    "files": [
+      ".swamp/pulled-extensions/@aaronge/can-i-hang-my-washing-out/files/LICENSE",
+      ".swamp/pulled-extensions/@aaronge/can-i-hang-my-washing-out/files/README.md",
+      ".swamp/pulled-extensions/@aaronge/can-i-hang-my-washing-out/manifest.yaml",
+      ".swamp/pulled-extensions/@aaronge/can-i-hang-my-washing-out/models/washing.ts",
+      ".swamp/pulled-extensions/@aaronge/can-i-hang-my-washing-out/workflows/workflow-washing-forecast.yaml"
+    ],
+    "checksum": "1b37d4e4bf47e4d75a5ad8dd89bb3f3597e8ca68421db9cae167cd681da2b600",
+    "filesChecksum": "c2226e17fedf2b5dc7feaf5a8941cf11ee07140b0346f44cebfe652bc3306b5b",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
+  },
+  "@aaronge/news-w-anchor": {
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:49:54.714Z",
+    "files": [
+      ".swamp/pulled-extensions/@aaronge/news-w-anchor/files/LICENSE",
+      ".swamp/pulled-extensions/@aaronge/news-w-anchor/files/README.md",
+      ".swamp/pulled-extensions/@aaronge/news-w-anchor/manifest.yaml",
+      ".swamp/pulled-extensions/@aaronge/news-w-anchor/models/news_w_anchor.ts",
+      ".swamp/pulled-extensions/@aaronge/news-w-anchor/workflows/workflow-morning-broadcast.yaml"
+    ],
+    "checksum": "f111fccd1434d87c69fb869bc0479aff4e09422926fd57ba517caff42ea48130",
+    "filesChecksum": "36b2e99bf5f036a75583b1ab07b7a7f13d9ffdbcf0bb48ae83471ed30e9a2cb6",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
+  },
+  "@aaronge/fleet-health-loki": {
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:50:00.799Z",
+    "files": [
+      ".swamp/pulled-extensions/@aaronge/fleet-health-loki/files/LICENSE",
+      ".swamp/pulled-extensions/@aaronge/fleet-health-loki/files/README.md",
+      ".swamp/pulled-extensions/@aaronge/fleet-health-loki/manifest.yaml",
+      ".swamp/pulled-extensions/@aaronge/fleet-health-loki/models/loki.ts",
+      ".swamp/pulled-extensions/@aaronge/fleet-health-loki/workflows/workflow-fleet-health.yaml"
+    ],
+    "checksum": "540049674b98313b5d43784b03de9c8126e7593b4ba366253a5523ea3d810fc8",
+    "filesChecksum": "df4a2647b957c5491c31b10c3b63aaa3a601768c4d6af3f56674056708d539d2",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
+  },
+  "@aaronge/systemd-panel": {
+    "version": "2026.10.01.3",
+    "pulledAt": "2026-11-05T12:50:01.957Z",
+    "files": [
+      ".swamp/pulled-extensions/@aaronge/systemd-panel/files/LICENSE",
+      ".swamp/pulled-extensions/@aaronge/systemd-panel/files/README.md",
+      ".swamp/pulled-extensions/@aaronge/systemd-panel/files/swamp-panel",
+      ".swamp/pulled-extensions/@aaronge/systemd-panel/manifest.yaml",
+      ".swamp/pulled-extensions/@aaronge/systemd-panel/models/systemd_unit.ts"
+    ],
+    "checksum": "a2898222c90ae1448d6970b5f1489a405f37927267c1c0c67e24f2922b3f104e",
+    "filesChecksum": "49befbbe40b8623315e8bdb3674450f1af461a0783ac973d8f332d3019812c0a",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
+  },
+  "@dieter/prometheus": {
+    "version": "2026.08.22.2",
+    "pulledAt": "2026-11-05T12:50:03.620Z",
+    "files": [
+      ".swamp/pulled-extensions/@dieter/prometheus/files/LICENSE",
+      ".swamp/pulled-extensions/@dieter/prometheus/files/README.md",
+      ".swamp/pulled-extensions/@dieter/prometheus/manifest.yaml",
+      ".swamp/pulled-extensions/@dieter/prometheus/models/prometheus.ts"
+    ],
+    "checksum": "8b90c7077a6a2a2214dd849030279d2396b9fd8372adcd65d3f6135a3580e444",
+    "filesChecksum": "cad30a8a3e67c65ccede7fae0e568eede93088a8bd20080db938c5341840b8e7",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
+  },
+  "@aaronge/github-trending": {
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:50:09.724Z",
+    "files": [
+      ".swamp/pulled-extensions/@aaronge/github-trending/files/LICENSE",
+      ".swamp/pulled-extensions/@aaronge/github-trending/files/README.md",
+      ".swamp/pulled-extensions/@aaronge/github-trending/manifest.yaml",
+      ".swamp/pulled-extensions/@aaronge/github-trending/models/github_trending.ts",
+      ".swamp/pulled-extensions/@aaronge/github-trending/workflows/workflow-github-trending.yaml"
+    ],
+    "checksum": "a7e662780f4f186563b12b310d580f9cfddc055bab5f8df72d11d72c6abe343e",
+    "filesChecksum": "e9fd0db9048ee47a9edf4d0541fc57e7e60d6d2c811f19dae0ff5f53f70e280b",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
+  },
+  "@aaronge/iss-tracker": {
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:50:15.888Z",
+    "files": [
+      ".swamp/pulled-extensions/@aaronge/iss-tracker/files/LICENSE",
+      ".swamp/pulled-extensions/@aaronge/iss-tracker/files/README.md",
+      ".swamp/pulled-extensions/@aaronge/iss-tracker/manifest.yaml",
+      ".swamp/pulled-extensions/@aaronge/iss-tracker/models/iss_tracker.ts",
+      ".swamp/pulled-extensions/@aaronge/iss-tracker/workflows/workflow-iss-tracker.yaml"
+    ],
+    "checksum": "8de1fc7aac894098bb332aaae23b934a207145fd8befd1faf1ac77fc4e8904f2",
+    "filesChecksum": "0166356ebde535ed752f947950fdf8f222784bb0df923e847cf5eccb0cf242f4",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
+  },
+  "@aaronge/package-archaeology": {
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T12:50:22.098Z",
+    "files": [
+      ".swamp/pulled-extensions/@aaronge/package-archaeology/files/LICENSE",
+      ".swamp/pulled-extensions/@aaronge/package-archaeology/files/README.md",
+      ".swamp/pulled-extensions/@aaronge/package-archaeology/manifest.yaml",
+      ".swamp/pulled-extensions/@aaronge/package-archaeology/models/package_archaeology.ts",
+      ".swamp/pulled-extensions/@aaronge/package-archaeology/workflows/workflow-package-archaeology.yaml"
+    ],
+    "checksum": "208272703046188f50cf5f69ef91ed87fe06238fd0b3ce38d3bbe340c19b9144",
+    "filesChecksum": "40b83966a4271f8087d11d7609662c02302e1e9a9628cfc38f5619db50bac73e",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   }
 }

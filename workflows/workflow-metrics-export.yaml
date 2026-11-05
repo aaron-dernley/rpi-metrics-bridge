@@ -11,16 +11,20 @@ description: >-
   as an absent series for that scrape, never a guessed 0/false — a blank
   line in Prometheus text-exposition format is legal and simply omits that
   metric. See README.md for the full field-scope table and why each
-  omitted field was deferred to v2.
+  omitted field was deferred to v2. Runs every 5 minutes under this repo's
+  swamp serve. The earlier per-minute systemd timer sampled faster than a
+  run could finish on this Pi.
 version: 1
 tags: {}
 trigger:
-  schedule: "*-*-* *:*:00"
+  schedule: "*/5 * * * *"
 jobs:
   - name: collect
     description: >-
-      One step per source method, all in parallel, each independently
-      allowFailure: true so one dead sensor can't blank the whole file.
+      One step per source method, at most 4 at a time (one per core), each
+      independently allowFailure: true so one dead sensor can't blank the
+      whole file.
+    concurrency: 4
     dependsOn: []
     steps:
       - name: readThrottle

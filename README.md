@@ -1,10 +1,12 @@
 # rpi-metrics-bridge
 
-A [Swamp](https://github.com/swamp-club/swamp) workflow that turns the
-`@aaronge/rpi-*`/`@aaronge/host-health`/`@aaronge/apt-inventory` extension
-family into a Grafana dashboard. This repo publishes no extension of its
-own — it exists purely to pull the 10 already-published extensions, read
-their latest data every minute, and write it as a Prometheus
+This Pi's single [Swamp](https://github.com/swamp-club/swamp) ops repo.
+One `swamp serve` here runs every scheduled `@aaronge/*` workflow (see
+[Scheduling](#scheduling)), and its own `metrics-export` workflow turns
+the `@aaronge/rpi-*`/`@aaronge/host-health`/`@aaronge/apt-inventory`
+extension family into a Grafana dashboard. This repo publishes no
+extension of its own. It pulls the published extensions, reads their
+latest data every 5 minutes, and writes it as a Prometheus
 textfile-collector `.prom` file for `node_exporter` to serve. Prometheus
 scrapes `node_exporter`; Grafana queries Prometheus. No Pushgateway: a
 long-running textfile collector gets Prometheus's native staleness/
@@ -28,9 +30,12 @@ target-down detection for free, which a push-based approach would give up.
 Set up via `swamp extension pull @aaronge/<name>` +
 `swamp model create @aaronge/<name> <instance>` for each row above — this
 repo has its own independent instances, separate from any same-named
-instance you might already be running elsewhere (e.g. `apt-local` also
-exists standalone in the `apt-inventory` repo as a `swamp serve` daemon;
-the two don't interact).
+instance in the extensions' own source repos.
+
+The other pulled packages' workflows need these instances too:
+`washing`, `anchor` (plus the `news-secrets` vault, copied over by
+`scripts/migrate-secrets.sh`), `daily`, `my-location`, `my-host`, `loki`,
+`prom` and `unit-swamp-serve`.
 
 ## Metric naming scheme
 
@@ -79,8 +84,7 @@ called `healthy` would be more confusing than useful.
 | `host_runnable_procs` / `host_total_procs` | host-health | |
 | `apt_installed_packages` | apt-inventory | |
 | `apt_upgradable_packages` / `apt_security_upgradable_packages` | apt-inventory | |
-| `apt_autoremove_pending` | apt-inventory | |
-| `apt_upgrades_pending{arch,origin}` | apt-inventory | labeled per repo origin |
+| `apt_vulnerabilities_total` / `apt_vulnerabilities_actionable` / `apt_vulnerabilities_false_positive` | apt-inventory | debsecan-based CVE scan; only `actionable` (fixAvailableInSuite && !actuallyFixed) is a real, currently-fixable count — see apt-inventory's own `actuallyFixed` doc for why `false_positive` is usually nonzero |
 | `rpi_rtc_drift_seconds` | rpi-rtc | |
 | `rpi_rtc_battery_volts` | rpi-rtc | nullable |
 | `rpi_rtc_system_clock_synchronized` | rpi-rtc | nullable |
@@ -149,8 +153,7 @@ Run by hand: `swamp workflow run metrics-export`.
   separate directory, since `node_exporter` only supports one textfile
   directory.
 - **Prometheus listens on `127.0.0.1:9099`, not the default 9090** — 9090
-  collides with `apt-inventory`'s own persistent `swamp serve` daemon on
-  this machine. See `/etc/prometheus/prometheus.yml`.
+  is this repo's own `swamp serve`. See `/etc/prometheus/prometheus.yml`.
 - `grafana` (own APT repo — not in default Debian repos):
   `apt.grafana.com`. The Prometheus datasource is provisioned as code at
   `/etc/grafana/provisioning/datasources/prometheus.yaml`, pointed at
@@ -168,57 +171,55 @@ Run by hand: `swamp workflow run metrics-export`.
 
 ## Scheduling
 
-Every minute via `systemd.timer`, not a persistent `swamp serve` daemon —
-same reasoning as the rest of this family (~400MB resident per idle daemon
-vs. ~0MB between runs for a oneshot timer):
+One persistent `swamp serve` for this repo runs every workflow below on
+its `trigger.schedule`. It replaced 16 per-repo `swamp-workflow-*`
+systemd timers on 2026-11-05. Those timers started a fresh swamp process
+for every run (15–30 s of CPU and 250–450 MB each) and overloaded the Pi.
+Under serve a typical run takes 1–2 s. See
+`docs/swamp-ops-best-practices.md` for the reasoning and the swamp-club
+manual references.
 
-```
-# /etc/systemd/system/swamp-workflow-rpi-metrics-bridge.service
-[Unit]
-Description=swamp workflow run metrics-export (rpi-metrics-bridge)
+- **Service:** installed by
+  `swamp serve daemon enable --repo-dir <this repo> --config serve.yaml`
+  as the user unit `swamp-serve.service`, with
+  `loginctl enable-linger aaronge` so it starts at boot. As a user unit it
+  gets `XDG_RUNTIME_DIR` from the user manager, which `readConnect` needs
+  (`rpi-connect status` talks to `rpi-connectd` over a per-user socket).
+  Manage it with `systemctl --user {status,restart} swamp-serve` and
+  `journalctl --user -u swamp-serve`.
+- **`serve.yaml`** (repo root, version-controlled): port 9090, one
+  scheduled run at a time, a 15-minute `max-run-duration`, hot-reload, and
+  `triggers:` overrides for pulled workflows. For example, fleet-health
+  watches `unit-swamp-serve` instead of the retired timers.
+- **GC:** `.swamp.yaml` sets `autoGc: true`, which applies each
+  extension's declared version caps at write time, and
+  `garbageCollection.automatic`, which runs an hourly retention pass.
+  Before this, 2.85M stale versions (41.6 GB) built up until
+  `metrics-export` ran out of memory.
 
-[Service]
-Type=oneshot
-User=aaronge
-Group=aaronge
-Environment=HOME=/home/aaronge
-Environment=XDG_RUNTIME_DIR=/run/user/1000
-WorkingDirectory=/home/aaronge/Repositories/rpi-metrics-bridge
-ExecStart=/usr/local/bin/swamp workflow run metrics-export --repo-dir /home/aaronge/Repositories/rpi-metrics-bridge
-```
+| Workflow | Schedule | Source |
+| --- | --- | --- |
+| `metrics-export` | `*/5 * * * *` | this repo |
+| `apt-vulnerability-scan` | `*/15 * * * *` | this repo |
+| `thermal-integrity`, `power-integrity`, `link-integrity` | `*/5 * * * *` | this repo (moved from `rpi-workflows`) |
+| `@aaronge/rpi-health`, `rpi-connect`, `rpi-cooling`, `rpi-pcie`, `rpi-rtc`, `host-health` | `*/5 * * * *` | pulled packages |
+| `@aaronge/rpi-boot-config`, `rpi-camera`, `rpi-gpio-inventory` | daily, 06:17 / 06:51 / 06:43 | pulled packages |
+| `@aaronge/apt-report` | `0 6,12,20 * * *` | pulled package |
+| `@aaronge/fleet-health` | every 10 min at :08 | pulled package, `serve.yaml` override |
+| `@aaronge/iss-tracker` | `3-59/5 * * * *` | pulled package |
+| `@aaronge/washing-forecast` | `0 6,9,12,17 * * *` | pulled package |
+| `@aaronge/github-trending` | `20 */3 * * *` | pulled package |
+| `@aaronge/package-archaeology` | `15 7 * * *` | pulled package |
+| `@aaronge/morning-broadcast` | `0 8 * * *` | pulled package |
 
-```
-# /etc/systemd/system/swamp-workflow-rpi-metrics-bridge.timer
-[Unit]
-Description=Timer for swamp workflow run metrics-export (rpi-metrics-bridge)
+Schedules don't need staggering: serve queues fires that coincide and runs
+them one at a time. The :00 batch of 11 workflows finishes in about 40 s.
+If `/api/v1/health` ever shows `oldestQueuedAt` growing, back a cadence
+off with `swamp workflow trigger set <name> --schedule ...`.
 
-[Timer]
-OnCalendar=*-*-* *:*:00
-# No Persistent=true: a missed minute's sample isn't worth backfilling the
-# way a missed assertion check is.
-
-[Install]
-WantedBy=timers.target
-```
-
-**`XDG_RUNTIME_DIR` is required** — `readConnect` (`rpi-connect status`)
-talks to `rpi-connectd` over a per-user runtime socket; without this env
-var it fails with "Raspberry Pi Connect is not running" on a system-level
-unit even when the service is genuinely up, since such units don't inherit
-a login session's environment. Same gotcha documented in the `rpi-connect`
-repo's own README, hit again here and now fixed the same way.
-
-No `--fail-on` flag needed on `ExecStart` — unlike `rpi-workflows`' assert-
-based workflows, `metrics-export` has no `assert` steps, so `allowFailure:
-true` on a plain step genuinely keeps `swamp workflow run`'s exit code at
-0 even when a source fails. Confirmed both by deliberately breaking a
-source's binary path during development and by a real `readConnect`
-failure caught on the first live timer run — both times the workflow
-still exited 0 and the `.prom` file still got written.
-
-`systemctl enable --now swamp-workflow-rpi-metrics-bridge.timer`. Verify
-with `systemctl list-timers 'swamp-workflow-rpi-metrics-bridge*'` and
-`journalctl -u swamp-workflow-rpi-metrics-bridge.service`.
+`metrics-export` has no `assert` steps, so `allowFailure: true` on its
+collect steps keeps the run successful even when a source fails, and the
+`.prom` file still gets written.
 
 ## License
 

@@ -1,0 +1,65 @@
+id: 59675375-ebd1-428a-8c54-276c7b100f6b
+name: link-integrity
+description: >-
+  Assert @aaronge/rpi-pcie's linkDegraded == false. Silent performance
+  loss made loud — this is the same assertion @aaronge/rpi-pcie ships in
+  its own workflow; duplicated here (rather than only relying on that
+  repo's copy) so it's visible alongside the rest of this family's
+  cross-cutting integrity checks in one place. Scheduled every 5 minutes,
+  matching @aaronge/rpi-pcie's own cadence.
+version: 1
+tags: {}
+trigger:
+  schedule: "*/5 * * * *"
+jobs:
+  - name: collect
+    description: Read PCIe device link state.
+    dependsOn: []
+    steps:
+      - name: readPcie
+        task:
+          type: model_method
+          modelIdOrName: pcie-local
+          methodName: readPcie
+        dependsOn: []
+
+  - name: assert
+    description: Fail the run when any PCIe device's link is degraded.
+    dependsOn:
+      - job: collect
+        condition:
+          type: completed
+    steps:
+      - name: link-not-degraded
+        allowFailure: false
+        task:
+          type: assert
+          expr: >-
+            data.latest("pcie-local", "pcie").attributes.linkDegraded == false
+          message: >-
+            PCIe link degraded: ${{ data.latest("pcie-local", "pcie").attributes.devices }} —
+            negotiated speed/width below capable on at least one device.
+          severity: high
+        dependsOn: []
+
+  - name: report
+    description: >-
+      Print a one-screen summary. Depends on collect only (not assert), so
+      it still runs when an assertion fails.
+    dependsOn:
+      - job: collect
+        condition:
+          type: completed
+    steps:
+      - name: summarize
+        task:
+          type: model_method
+          modelType: "command/shell"
+          modelName: link-integrity-summary
+          methodName: execute
+          inputs:
+            run: >-
+              echo "link-integrity" &&
+              echo "  linkDegraded: ${{ data.latest('pcie-local', 'pcie').attributes.linkDegraded }}" &&
+              echo "  devices: ${{ data.latest('pcie-local', 'pcie').attributes.devices }}"
+        dependsOn: []
