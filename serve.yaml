@@ -20,3 +20,16 @@ triggers:
     schedule: "*/5 * * * *"
     inputs:
       lowBatteryVolts: 0
+  # Hourly instead of daily. These inventories change rarely, and their
+  # models are already read every 5 minutes by metrics-export, so the
+  # extra runs cost about a second each.
+  "@aaronge/rpi-boot-config":
+    schedule: "17 * * * *"
+  "@aaronge/rpi-gpio-inventory":
+    schedule: "43 * * * *"
+  "@aaronge/rpi-camera":
+    schedule: "51 * * * *"
+  # Every 5 minutes instead of 10. :03/:08/… keeps the original :08/:18
+  # slots and runs after each :00/:05 batch has written its exports.
+  "@aaronge/fleet-health":
+    schedule: "3-59/5 * * * *"
