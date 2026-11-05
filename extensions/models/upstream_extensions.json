@@ -1,7 +1,7 @@
 {
   "@aaronge/rpi-health": {
-    "version": "2026.11.05.3",
-    "pulledAt": "2026-11-05T14:56:56.572Z",
+    "version": "2026.11.05.4",
+    "pulledAt": "2026-11-05T16:14:15.641Z",
     "files": [
       ".swamp/pulled-extensions/@aaronge/rpi-health/files/LICENSE",
       ".swamp/pulled-extensions/@aaronge/rpi-health/files/README.md",
@@ -9,8 +9,8 @@
       ".swamp/pulled-extensions/@aaronge/rpi-health/models/rpi_health.ts",
       ".swamp/pulled-extensions/@aaronge/rpi-health/workflows/workflow-rpi-health.yaml"
     ],
-    "checksum": "fa883ecf99b8c1d88667297c61a3b9398700ec6d70a93b20c450440d7a390e66",
-    "filesChecksum": "d37628d97ad48643751d0a76f3814a6aaa64877a8ba50de3cc652cb04126ef85",
+    "checksum": "2764df9ef72d9a6691809ca1f166b331088a5a1cd50c0ec0dbe79fc4f63a15a4",
+    "filesChecksum": "9528711ff2efa91bf3375ef338782674eef1bae2944836e97f35bbdc74c07979",
     "serverUrl": "https://swamp-club.com",
     "publishedChannel": "stable"
   },
