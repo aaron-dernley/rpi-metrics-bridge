@@ -8,7 +8,15 @@ max-concurrent-scheduled-runs: 1
 # A hung run is aborted instead of holding memory for an hour.
 max-run-duration: "15m"
 hot-reload: true
-# Per-workflow schedule/input overrides for pulled packages go in a
-# `triggers:` block here (documented in docs/swamp-ops-best-practices.md).
-# None are needed today: every package's own trigger.schedule and input
-# defaults fit this Pi.
+# Per-workflow schedule/input overrides for pulled packages (documented in
+# docs/swamp-ops-best-practices.md). Each entry replaces that workflow's
+# built-in trigger, so restate its schedule.
+triggers:
+  # No RTC coin cell is fitted on this Pi: the J5 battery input reads about
+  # 0.008 V. lowBatteryVolts=0 turns off only the battery assert. The drift
+  # check against NTP still runs, and rpi_rtc_battery_volts is still
+  # exported. Remove this entry if a battery is ever fitted.
+  "@aaronge/rpi-rtc":
+    schedule: "*/5 * * * *"
+    inputs:
+      lowBatteryVolts: 0
