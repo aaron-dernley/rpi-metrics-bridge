@@ -188,9 +188,9 @@ manual references.
   Manage it with `systemctl --user {status,restart} swamp-serve` and
   `journalctl --user -u swamp-serve`.
 - **`serve.yaml`** (repo root, version-controlled): port 9090, one
-  scheduled run at a time, a 15-minute `max-run-duration`, hot-reload, and
-  `triggers:` overrides for pulled workflows. For example, fleet-health
-  watches `unit-swamp-serve` instead of the retired timers.
+  scheduled run at a time, a 15-minute `max-run-duration` and hot-reload.
+  A `triggers:` block there can override a pulled workflow's schedule or
+  inputs without republishing it. None are needed today.
 - **GC:** `.swamp.yaml` sets `autoGc: true`, which applies each
   extension's declared version caps at write time, and
   `garbageCollection.automatic`, which runs an hourly retention pass.
@@ -205,7 +205,7 @@ manual references.
 | `@aaronge/rpi-health`, `rpi-connect`, `rpi-cooling`, `rpi-pcie`, `rpi-rtc`, `host-health` | `*/5 * * * *` | pulled packages |
 | `@aaronge/rpi-boot-config`, `rpi-camera`, `rpi-gpio-inventory` | daily, 06:17 / 06:51 / 06:43 | pulled packages |
 | `@aaronge/apt-report` | `0 6,12,20 * * *` | pulled package |
-| `@aaronge/fleet-health` | every 10 min at :08 | pulled package, `serve.yaml` override |
+| `@aaronge/fleet-health` | every 10 min at :08 | pulled package (watches `unit-swamp-serve`) |
 | `@aaronge/iss-tracker` | `3-59/5 * * * *` | pulled package |
 | `@aaronge/washing-forecast` | `0 6,9,12,17 * * *` | pulled package |
 | `@aaronge/github-trending` | `20 */3 * * *` | pulled package |

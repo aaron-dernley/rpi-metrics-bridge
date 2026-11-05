@@ -8,16 +8,7 @@ max-concurrent-scheduled-runs: 1
 # A hung run is aborted instead of holding memory for an hour.
 max-run-duration: "15m"
 hot-reload: true
-# Per-workflow overrides for pulled packages (documented `triggers:` block;
-# `swamp workflow trigger set` can't express array inputs).
-triggers:
-  # The swamp-workflow-* timers fleet-health used to watch were retired when
-  # this serve took over scheduling, so it watches the serve itself. Its
-  # .prom freshness and Loki error checks are unchanged.
-  "@aaronge/fleet-health":
-    schedule: "8,18,28,38,48,58 * * * *"
-    inputs:
-      units:
-        - unit-swamp-serve
-      gatedUnits:
-        - unit-swamp-serve
+# Per-workflow schedule/input overrides for pulled packages go in a
+# `triggers:` block here (documented in docs/swamp-ops-best-practices.md).
+# None are needed today: every package's own trigger.schedule and input
+# defaults fit this Pi.
