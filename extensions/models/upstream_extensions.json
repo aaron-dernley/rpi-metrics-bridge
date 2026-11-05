@@ -281,5 +281,21 @@
     "filesChecksum": "2ebd74523e60a3a32d5be951cd62ade91543bc4b3be6afc321ada916309cbeef",
     "serverUrl": "https://swamp-club.com",
     "publishedChannel": "stable"
+  },
+  "@aaronge/nvme-health": {
+    "version": "2026.11.05.1",
+    "pulledAt": "2026-11-05T16:07:26.888Z",
+    "files": [
+      ".swamp/pulled-extensions/@aaronge/nvme-health/files/LICENSE",
+      ".swamp/pulled-extensions/@aaronge/nvme-health/files/README.md",
+      ".swamp/pulled-extensions/@aaronge/nvme-health/manifest.yaml",
+      ".swamp/pulled-extensions/@aaronge/nvme-health/models/nvme_health.ts",
+      ".swamp/pulled-extensions/@aaronge/nvme-health/workflows/workflow-ce2287d2-c707-4f48-aaf9-56a749928540.yaml",
+      ".swamp/pulled-extensions/@aaronge/nvme-health/workflows/workflow-e8a0cb34-30e4-4cc3-9ca4-ae12b1f19259.yaml"
+    ],
+    "checksum": "abbd0f1c8194ce03fe45d115caa3f1d5e8bd1c7303ea515b2cc328d474840a9d",
+    "filesChecksum": "c87ac232966a9ffcbc34aeefa068128c9c5fba1673ee77400f6f17a52ed6410d",
+    "serverUrl": "https://swamp-club.com",
+    "publishedChannel": "stable"
   }
 }

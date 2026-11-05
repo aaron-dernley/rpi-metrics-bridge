@@ -28,14 +28,14 @@ jobs:
     steps:
       - name: readClocks
         task:
-          type: model_method
-          modelIdOrName: health-local
+          type: behavior
+          behavior: health-local
           methodName: readClocks
         dependsOn: []
       - name: readCooling
         task:
-          type: model_method
-          modelIdOrName: cooling-local
+          type: behavior
+          behavior: cooling-local
           methodName: readCooling
         dependsOn: []
 
@@ -75,9 +75,9 @@ jobs:
     steps:
       - name: summarize
         task:
-          type: model_method
-          modelType: "command/shell"
-          modelName: thermal-integrity-summary
+          type: behavior
+          behaviorType: "command/shell"
+          behaviorName: thermal-integrity-summary
           methodName: execute
           inputs:
             run: >-

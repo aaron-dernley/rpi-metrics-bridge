@@ -3,249 +3,2175 @@
   "uid": "rpi-metrics-bridge",
   "title": "RPi Metrics Bridge",
   "description": "Homelab Pi 5 dashboard fed by the rpi-metrics-bridge Prometheus textfile collector (rpi-health, host-health, rpi-cooling, rpi-rtc, rpi-pcie, rpi-boot-config, rpi-connect, rpi-gpio-inventory, rpi-camera, apt-inventory).",
-  "tags": ["rpi", "homelab", "swamp"],
+  "tags": [
+    "rpi",
+    "homelab",
+    "swamp"
+  ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 6,
   "refresh": "1m",
-  "time": { "from": "now-6h", "to": "now" },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
   "panels": [
-    { "id": 1, "type": "row", "title": "Staleness / Heartbeat", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 }, "panels": [] },
-
     {
-      "id": 2, "type": "timeseries", "title": "Capture Age by Source",
+      "id": 1,
+      "type": "row",
+      "title": "Staleness / Heartbeat",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "panels": []
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "Capture Age by Source",
       "description": "Seconds since each source's last successful capture. Should hover near 0-60s; a rising line means that source's collect step is failing.",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
-      "targets": [{ "expr": "rpi_metrics_bridge_capture_age_seconds", "legendFormat": "{{source}}", "refId": "A" }]
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rpi_metrics_bridge_capture_age_seconds",
+          "legendFormat": "{{source}}",
+          "refId": "A"
+        }
+      ]
     },
     {
-      "id": 3, "type": "stat", "title": "Bridge Export Freshness",
+      "id": 3,
+      "type": "stat",
+      "title": "Bridge Export Freshness",
       "description": "Seconds since rpi_metrics.prom was last written by the timer. Alert if > 300.",
-      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "s", "thresholds": { "mode": "absolute", "steps": [
-        { "color": "green", "value": null }, { "color": "orange", "value": 180 }, { "color": "red", "value": 300 }
-      ] } }, "overrides": [] },
-      "targets": [{ "expr": "time() - node_textfile_mtime_seconds{file=~\".*rpi_metrics.prom\"}", "refId": "A" }]
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 180
+              },
+              {
+                "color": "red",
+                "value": 300
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "time() - node_textfile_mtime_seconds{file=~\".*rpi_metrics.prom\"}",
+          "refId": "A"
+        }
+      ]
     },
     {
-      "id": 4, "type": "stat", "title": "Textfile Scrape Error",
+      "id": 4,
+      "type": "stat",
+      "title": "Textfile Scrape Error",
       "description": "1 if node_exporter failed to parse any textfile collector file (malformed write, permissions, etc).",
-      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 1 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "mappings": [
-        { "type": "value", "options": { "0": { "text": "OK", "color": "green" }, "1": { "text": "ERROR", "color": "red" } } }
-      ], "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } }, "overrides": [] },
-      "targets": [{ "expr": "node_textfile_scrape_error", "refId": "A" }]
-    },
-
-    { "id": 10, "type": "row", "title": "Thermal / Power", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 9 }, "panels": [] },
-
-    {
-      "id": 11, "type": "timeseries", "title": "SoC / Filesystem Temperature",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 10 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "celsius", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 1
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "OK",
+                  "color": "green"
+                },
+                "1": {
+                  "text": "ERROR",
+                  "color": "red"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
       "targets": [
-        { "expr": "rpi_health_core_temp_celsius", "legendFormat": "SoC core temp", "refId": "A" },
-        { "expr": "host_max_thermal_celsius", "legendFormat": "max thermal zone", "refId": "B" }
+        {
+          "expr": "node_textfile_scrape_error",
+          "refId": "A"
+        }
       ]
     },
     {
-      "id": 12, "type": "timeseries", "title": "Core / Supply Voltage",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 10 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "volt", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "id": 10,
+      "type": "row",
+      "title": "Thermal / Power",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "panels": []
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "SoC / Filesystem Temperature",
+      "description": "CPU/SoC core temperature vs. the hottest thermal zone reported by the kernel (may be the same sensor, or a different one on some boards).",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 10
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
       "targets": [
-        { "expr": "rpi_health_core_volts", "legendFormat": "core volts", "refId": "A" },
-        { "expr": "rpi_health_supply_volts", "legendFormat": "supply volts", "refId": "B" }
+        {
+          "expr": "rpi_health_core_temp_celsius",
+          "legendFormat": "SoC core temp",
+          "refId": "A"
+        },
+        {
+          "expr": "host_max_thermal_celsius",
+          "legendFormat": "max thermal zone",
+          "refId": "B"
+        }
       ]
     },
     {
-      "id": 13, "type": "timeseries", "title": "Estimated Total Power Draw",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 18 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "watt", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
-      "targets": [{ "expr": "rpi_health_estimated_total_watts", "legendFormat": "watts", "refId": "A" }]
+      "id": 12,
+      "type": "timeseries",
+      "title": "Core / Supply Voltage",
+      "description": "SoC core voltage and the 5V rail voltage as reported by vcgencmd — a sagging supply rail under load points at a power-delivery problem before it causes visible instability.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 10
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "volt",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rpi_health_core_volts",
+          "legendFormat": "core volts",
+          "refId": "A"
+        },
+        {
+          "expr": "rpi_health_supply_volts",
+          "legendFormat": "supply volts",
+          "refId": "B"
+        }
+      ]
     },
     {
-      "id": 14, "type": "timeseries", "title": "ARM Clock Speed",
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 18 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "hertz", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
-      "targets": [{ "expr": "rpi_health_arm_hertz", "legendFormat": "ARM freq", "refId": "A" }]
+      "id": 13,
+      "type": "timeseries",
+      "title": "Estimated Total Power Draw",
+      "description": "host-health's estimate of whole-board power draw in watts, derived from voltage/current readings — not a certified measurement, but useful for spotting trend changes (e.g. after attaching new hardware).",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 18
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "watt",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rpi_health_estimated_total_watts",
+          "legendFormat": "watts",
+          "refId": "A"
+        }
+      ]
     },
     {
-      "id": 15, "type": "stat", "title": "Sticky Fault Bits (since boot)",
+      "id": 14,
+      "type": "timeseries",
+      "title": "ARM Clock Speed",
+      "description": "Current ARM core frequency. A sudden drop usually means thermal or under-voltage throttling kicked in — cross-check against the Sticky Fault Bits and SoC Temperature panels.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 18
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "hertz",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rpi_health_arm_hertz",
+          "legendFormat": "ARM freq",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "stat",
+      "title": "Sticky Fault Bits (since boot)",
       "description": "1 = fault occurred at some point since boot, even if not currently active. healthy=0 means at least one sticky bit is set.",
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 18 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "mappings": [
-        { "type": "value", "options": { "0": { "text": "no", "color": "green" }, "1": { "text": "YES", "color": "red" } } }
-      ] }, "overrides": [] },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 18
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "no",
+                  "color": "green"
+                },
+                "1": {
+                  "text": "YES",
+                  "color": "red"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
       "targets": [
-        { "expr": "rpi_health_undervoltage_since_boot", "legendFormat": "undervoltage", "refId": "A" },
-        { "expr": "rpi_health_throttled_since_boot", "legendFormat": "throttled", "refId": "B" },
-        { "expr": "rpi_health_arm_freq_capped_since_boot", "legendFormat": "freq capped", "refId": "C" },
-        { "expr": "rpi_health_soft_temp_limit_reached_since_boot", "legendFormat": "soft temp limit", "refId": "D" }
+        {
+          "expr": "rpi_health_undervoltage_since_boot",
+          "legendFormat": "undervoltage",
+          "refId": "A"
+        },
+        {
+          "expr": "rpi_health_throttled_since_boot",
+          "legendFormat": "throttled",
+          "refId": "B"
+        },
+        {
+          "expr": "rpi_health_arm_freq_capped_since_boot",
+          "legendFormat": "freq capped",
+          "refId": "C"
+        },
+        {
+          "expr": "rpi_health_soft_temp_limit_reached_since_boot",
+          "legendFormat": "soft temp limit",
+          "refId": "D"
+        }
       ]
     },
-
-    { "id": 20, "type": "row", "title": "Fan / Cooling", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 26 }, "panels": [] },
-
     {
-      "id": 21, "type": "timeseries", "title": "Fan RPM",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 27 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "rotrpm", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
-      "targets": [{ "expr": "rpi_cooling_fan_rpm", "legendFormat": "rpm", "refId": "A" }]
+      "id": 20,
+      "type": "row",
+      "title": "Fan / Cooling",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "panels": []
     },
     {
-      "id": 22, "type": "timeseries", "title": "Fan PWM Duty Cycle",
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 27 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "percent", "max": 100, "min": 0, "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
-      "targets": [{ "expr": "rpi_cooling_fan_pwm_percent", "legendFormat": "pwm %", "refId": "A" }]
+      "id": 21,
+      "type": "timeseries",
+      "title": "Fan RPM",
+      "description": "Measured fan speed from the case's tachometer feedback pin, if wired. Compare against Fan PWM Duty Cycle — RPM not tracking a duty cycle change is what Fan Stalled is watching for.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 27
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "rotrpm",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rpi_cooling_fan_rpm",
+          "legendFormat": "rpm",
+          "refId": "A"
+        }
+      ]
     },
     {
-      "id": 23, "type": "timeseries", "title": "Cooling State",
+      "id": 22,
+      "type": "timeseries",
+      "title": "Fan PWM Duty Cycle",
+      "description": "Commanded fan speed as a percentage (0-100), set by the thermal governor based on Cooling State — this is the target, not the measured result (see Fan RPM for that).",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 27
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "max": 100,
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rpi_cooling_fan_pwm_percent",
+          "legendFormat": "pwm %",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "Cooling State",
       "description": "Current cooling-device state vs. its max state (thermal governor step level, not a temperature).",
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 27 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 27
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
       "targets": [
-        { "expr": "rpi_cooling_state", "legendFormat": "state", "refId": "A" },
-        { "expr": "rpi_cooling_max_state", "legendFormat": "max state", "refId": "B" }
+        {
+          "expr": "rpi_cooling_state",
+          "legendFormat": "state",
+          "refId": "A"
+        },
+        {
+          "expr": "rpi_cooling_max_state",
+          "legendFormat": "max state",
+          "refId": "B"
+        }
       ]
     },
     {
-      "id": 24, "type": "stat", "title": "Fan Stalled",
-      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 35 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "mappings": [
-        { "type": "value", "options": { "0": { "text": "running", "color": "green" }, "1": { "text": "STALLED", "color": "red" } } }
-      ] }, "overrides": [] },
-      "targets": [{ "expr": "rpi_cooling_fan_stalled", "refId": "A" }]
-    },
-
-    { "id": 30, "type": "row", "title": "Filesystem / Memory / Load", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 39 }, "panels": [] },
-
-    {
-      "id": 31, "type": "timeseries", "title": "Disk Usage",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "percent", "max": 100, "min": 0, "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "id": 24,
+      "type": "stat",
+      "title": "Fan Stalled",
+      "description": "Kernel-detected stall: the fan is commanded to spin (nonzero PWM duty cycle) but its tachometer isn't reporting rotation. STALLED here means physically check the fan, not a software issue.",
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 35
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "running",
+                  "color": "green"
+                },
+                "1": {
+                  "text": "STALLED",
+                  "color": "red"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
       "targets": [
-        { "expr": "host_root_used_percent", "legendFormat": "root fs", "refId": "A" },
-        { "expr": "host_worst_used_percent", "legendFormat": "worst mount", "refId": "B" }
+        {
+          "expr": "rpi_cooling_fan_stalled",
+          "refId": "A"
+        }
       ]
     },
     {
-      "id": 32, "type": "timeseries", "title": "Memory Used",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "percent", "max": 100, "min": 0, "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
-      "targets": [{ "expr": "host_memory_used_percent", "legendFormat": "memory used %", "refId": "A" }]
+      "id": 30,
+      "type": "row",
+      "title": "Filesystem / Memory / Load",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "panels": []
     },
     {
-      "id": 33, "type": "timeseries", "title": "Swap Used",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 48 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "bytes", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
-      "targets": [{ "expr": "host_swap_used_bytes", "legendFormat": "swap used", "refId": "A" }]
-    },
-    {
-      "id": 34, "type": "timeseries", "title": "Load Average",
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 48 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "id": 31,
+      "type": "timeseries",
+      "title": "Disk Usage",
+      "description": "Root filesystem usage vs. the single worst-utilized mount on the host — the worst mount is what actually triggers 'disk full' problems, since it may not be root.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 42
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "max": 100,
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
       "targets": [
-        { "expr": "host_load1", "legendFormat": "load1", "refId": "A" },
-        { "expr": "host_load5", "legendFormat": "load5", "refId": "B" },
-        { "expr": "host_load15", "legendFormat": "load15", "refId": "C" }
+        {
+          "expr": "host_root_used_percent",
+          "legendFormat": "root fs",
+          "refId": "A"
+        },
+        {
+          "expr": "host_worst_used_percent",
+          "legendFormat": "worst mount",
+          "refId": "B"
+        }
       ]
     },
     {
-      "id": 35, "type": "timeseries", "title": "Load5 per Core",
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 48 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "percentunit", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
-      "targets": [{ "expr": "host_load5_per_core_ratio", "legendFormat": "load5/core", "refId": "A" }]
-    },
-    {
-      "id": 36, "type": "timeseries", "title": "Process Counts",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 56 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
+      "id": 32,
+      "type": "timeseries",
+      "title": "Memory Used",
+      "description": "RAM used as a percentage of total. Sustained near-100% usage is what drives swap usage up (see Swap Used) and eventually the OOM killer.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 42
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "max": 100,
+          "min": 0,
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
       "targets": [
-        { "expr": "host_runnable_procs", "legendFormat": "runnable", "refId": "A" },
-        { "expr": "host_total_procs", "legendFormat": "total", "refId": "B" }
-      ]
-    },
-
-    { "id": 40, "type": "row", "title": "Packages / Security / Misc", "gridPos": { "h": 1, "w": 24, "x": 0, "y": 64 }, "panels": [] },
-
-    {
-      "id": 41, "type": "stat", "title": "Upgradable Packages",
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 65 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "orange", "value": 1 }] } }, "overrides": [
-        { "matcher": { "id": "byName", "options": "security" }, "properties": [{ "id": "thresholds", "value": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "red", "value": 1 }] } }] }
-      ] },
-      "targets": [
-        { "expr": "apt_upgradable_packages", "legendFormat": "total", "refId": "A" },
-        { "expr": "apt_security_upgradable_packages", "legendFormat": "security", "refId": "B" }
-      ]
-    },
-    {
-      "id": 42, "type": "stat", "title": "Installed / Autoremove Pending",
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 65 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": {}, "overrides": [] },
-      "targets": [
-        { "expr": "apt_installed_packages", "legendFormat": "installed", "refId": "A" },
-        { "expr": "apt_autoremove_pending", "legendFormat": "autoremove pending", "refId": "B" }
+        {
+          "expr": "host_memory_used_percent",
+          "legendFormat": "memory used %",
+          "refId": "A"
+        }
       ]
     },
     {
-      "id": 43, "type": "bargauge", "title": "Upgrades Pending by Origin",
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 65 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": {}, "overrides": [] },
-      "targets": [{ "expr": "apt_upgrades_pending", "legendFormat": "{{origin}}", "refId": "A" }]
-    },
-    {
-      "id": 44, "type": "stat", "title": "PCIe / RTC / Connect",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 73 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "mappings": [
-        { "type": "value", "options": { "0": { "text": "no", "color": "green" }, "1": { "text": "yes", "color": "orange" } } }
-      ] }, "overrides": [] },
+      "id": 33,
+      "type": "timeseries",
+      "title": "Swap Used",
+      "description": "Bytes of zram swap in use (this machine uses compressed RAM-backed swap, not a swap partition — see MIGRATION.md). Rising swap usage alongside high Memory Used means the workload has outgrown RAM.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 50
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
       "targets": [
-        { "expr": "rpi_pcie_link_degraded", "legendFormat": "PCIe link degraded", "refId": "A" },
-        { "expr": "rpi_rtc_system_clock_synchronized", "legendFormat": "RTC synced", "refId": "B" },
-        { "expr": "rpi_connect_signed_in", "legendFormat": "Connect signed in", "refId": "C" }
+        {
+          "expr": "host_swap_used_bytes",
+          "legendFormat": "swap used",
+          "refId": "A"
+        }
       ]
     },
     {
-      "id": 45, "type": "timeseries", "title": "RTC Drift",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 73 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": { "unit": "s", "custom": { "drawStyle": "line", "fillOpacity": 10 } }, "overrides": [] },
-      "targets": [{ "expr": "rpi_rtc_drift_seconds", "legendFormat": "drift", "refId": "A" }]
+      "id": 34,
+      "type": "timeseries",
+      "title": "Load Average",
+      "description": "Standard Unix load averages (1/5/15 min) — number of runnable+uninterruptible processes on average. Compare against Load5 per Core to judge whether a given number is actually high for this machine's core count.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 50
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "host_load1",
+          "legendFormat": "load1",
+          "refId": "A"
+        },
+        {
+          "expr": "host_load5",
+          "legendFormat": "load5",
+          "refId": "B"
+        },
+        {
+          "expr": "host_load15",
+          "legendFormat": "load15",
+          "refId": "C"
+        }
+      ]
     },
     {
-      "id": 46, "type": "stat", "title": "GPIO / Camera / Boot Config",
-      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 81 },
-      "datasource": { "type": "prometheus", "uid": "PBFA97CFB590B2093" },
-      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "id": 35,
+      "type": "timeseries",
+      "title": "Load5 per Core",
+      "description": "5-minute load average divided by core count — normalizes Load Average so 1.0 means 'fully using every core,' comparable across machines with different core counts.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 50
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
       "targets": [
-        { "expr": "rpi_gpio_pin_count", "legendFormat": "GPIO pins", "refId": "A" },
-        { "expr": "rpi_camera_count", "legendFormat": "cameras detected", "refId": "B" },
-        { "expr": "rpi_camera_output_recognized", "legendFormat": "camera output recognized", "refId": "C" },
-        { "expr": "rpi_boot_config_eeprom_content_hash", "legendFormat": "boot config hash", "refId": "D" }
+        {
+          "expr": "host_load5_per_core_ratio",
+          "legendFormat": "load5/core",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "type": "timeseries",
+      "title": "Process Counts",
+      "description": "Total process/thread count vs. how many are currently runnable (ready to run but waiting for CPU). A runnable count that tracks total procs closely means CPU contention, not just many idle processes.",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 58
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "host_runnable_procs",
+          "legendFormat": "runnable",
+          "refId": "A"
+        },
+        {
+          "expr": "host_total_procs",
+          "legendFormat": "total",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "type": "row",
+      "title": "Packages / Security / Misc",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 66
+      },
+      "panels": []
+    },
+    {
+      "id": 41,
+      "type": "stat",
+      "title": "Upgradable Packages",
+      "description": "Total packages apt would upgrade right now vs. how many of those are classified security-relevant by apt's own origin string. Any nonzero security count is worth acting on soon.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 67
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "security"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "apt_upgradable_packages",
+          "legendFormat": "total",
+          "refId": "A"
+        },
+        {
+          "expr": "apt_security_upgradable_packages",
+          "legendFormat": "security",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "type": "stat",
+      "title": "Installed Packages",
+      "description": "Total currently-installed dpkg packages on the host. Mostly useful as a trend line — a sudden jump usually means a manual install or a big dependency pull.",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 67
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "apt_installed_packages",
+          "legendFormat": "installed",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "type": "bargauge",
+      "title": "Vulnerability Scan (debsecan)",
+      "description": "Total CVE/package entries debsecan reports, split into actionable (real, currently-fixable — the number that matters) and false positive (already patched, per dpkg's own version comparison — see apt-inventory's actuallyFixed logic).",
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 67
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "actionable"
+            },
+            "properties": [
+              {
+                "id": "thresholds",
+                "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": null
+                    },
+                    {
+                      "color": "red",
+                      "value": 1
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal"
+      },
+      "targets": [
+        {
+          "expr": "apt_vulnerabilities_total",
+          "legendFormat": "total",
+          "refId": "A"
+        },
+        {
+          "expr": "apt_vulnerabilities_actionable",
+          "legendFormat": "actionable",
+          "refId": "B"
+        },
+        {
+          "expr": "apt_vulnerabilities_false_positive",
+          "legendFormat": "false positive",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "type": "stat",
+      "title": "PCIe / RTC / Connect",
+      "description": "PCIe link degraded: yes is bad (red). RTC synced / Connect signed in: yes is good (green) — each field has its own mapping since 'yes' means something different per metric.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 75
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "no"
+                },
+                "1": {
+                  "text": "yes"
+                }
+              }
+            }
+          ]
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "PCIe link degraded"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "no",
+                        "color": "green"
+                      },
+                      "1": {
+                        "text": "yes",
+                        "color": "orange"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "RTC synced"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "no",
+                        "color": "red"
+                      },
+                      "1": {
+                        "text": "yes",
+                        "color": "green"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Connect signed in"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "no",
+                        "color": "orange"
+                      },
+                      "1": {
+                        "text": "yes",
+                        "color": "green"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "background"
+      },
+      "targets": [
+        {
+          "expr": "rpi_pcie_link_degraded",
+          "legendFormat": "PCIe link degraded",
+          "refId": "A"
+        },
+        {
+          "expr": "rpi_rtc_system_clock_synchronized",
+          "legendFormat": "RTC synced",
+          "refId": "B"
+        },
+        {
+          "expr": "rpi_connect_signed_in",
+          "legendFormat": "Connect signed in",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "type": "timeseries",
+      "title": "RTC Drift",
+      "description": "System clock minus the hardware RTC's own clock, in seconds. A few seconds is normal drift between syncs; anything growing into minutes means the RTC battery or chip needs attention.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 75
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rpi_rtc_drift_seconds",
+          "legendFormat": "drift",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "type": "stat",
+      "title": "GPIO / Camera",
+      "description": "GPIO pin count from gpiochip0, plus CSI camera detection. 'camera recognized' means rpicam-hello's output matched a known format (zero cameras is a valid, recognized result on this hardware) — NO means the parser hit unrecognized output and needs a look.",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 83
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "camera output recognized"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "0": {
+                        "text": "NO",
+                        "color": "red"
+                      },
+                      "1": {
+                        "text": "yes",
+                        "color": "green"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "rpi_gpio_pin_count",
+          "legendFormat": "GPIO pins",
+          "refId": "A"
+        },
+        {
+          "expr": "rpi_camera_count",
+          "legendFormat": "cameras detected",
+          "refId": "B"
+        },
+        {
+          "expr": "rpi_camera_output_recognized",
+          "legendFormat": "camera recognized",
+          "refId": "C"
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "type": "stat",
+      "title": "Boot Config Change-Hash",
+      "description": "Opaque content hash for change-detection, not a magnitude to read — it only matters whether this value changes run to run, so it's shown at full width to avoid clipping and colored neutrally (not by size).",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 83
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "value",
+        "colorMode": "none"
+      },
+      "targets": [
+        {
+          "expr": "rpi_boot_config_eeprom_content_hash",
+          "legendFormat": "boot config hash",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "type": "row",
+      "title": "Run Log",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 89
+      },
+      "panels": []
+    },
+    {
+      "id": 51,
+      "type": "logs",
+      "title": "Core Extension Run Log",
+      "description": "Live journald output from the ops repo's swamp serve (user unit swamp-serve.service in rpi-metrics-bridge, which runs every scheduled workflow) via Loki/Promtail, for every workflow not on the Fun Stuff dashboard. Promtail lifts the workflow name into a `workflow` label. Serve logs one line per scheduled fire, start and outcome (completed, or failed with the assert message); per-step output stays in swamp's own run history (`swamp workflow history`).",
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 90
+      },
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "sortOrder": "Descending"
+      },
+      "targets": [
+        {
+          "expr": "{family=\"core\"}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 60,
+      "type": "row",
+      "title": "Fleet Health",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 105
+      },
+      "panels": []
+    },
+    {
+      "id": 61,
+      "type": "stat",
+      "title": "Units Monitored",
+      "description": "Units with a trustworthy pass/fail signal, out of the total checked, from the fleet-health repo's health-check workflow (runs every 5 minutes).",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 106
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "colorMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "fleet_health_units_monitored",
+          "legendFormat": "monitored",
+          "refId": "A",
+          "instant": true
+        },
+        {
+          "expr": "fleet_health_units_total",
+          "legendFormat": "total",
+          "refId": "B",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 62,
+      "type": "stat",
+      "title": "Stale Exports",
+      "description": "Prometheus textfile exports currently beyond their own expected freshness window. 0 is healthy.",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 106
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "value",
+        "colorMode": "background",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "fleet_health_stale_exports",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 63,
+      "type": "stat",
+      "title": "New Errors (10m)",
+      "description": "New error-level log lines in the last 10 minutes, excluding already-tracked baseline noise (PCIe link-integrity, rpi-connect's expected not-signed-in, iss-tracker's occasional flaky public-API fetch). 0 is healthy.",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 106
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "value",
+        "colorMode": "background",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "fleet_health_new_errors",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 64,
+      "type": "stat",
+      "title": "Fleet Health Check Freshness",
+      "description": "Seconds since fleet-health.prom was last written by its 10-minute timer. Alert if this climbs well past ~20 minutes.",
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 106
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1200
+              },
+              {
+                "color": "red",
+                "value": 2400
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "time() - node_textfile_mtime_seconds{file=~\".*fleet-health.prom\"}",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 65,
+      "type": "table",
+      "title": "Per-Unit Status",
+      "description": "1 = last recognized run succeeded, 0 = failed. A unit missing from this table has no trustworthy signal (see Units Monitored) — check it manually.",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 112
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            }
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "0": {
+                  "text": "FAILED",
+                  "color": "red"
+                },
+                "1": {
+                  "text": "ok",
+                  "color": "green"
+                }
+              }
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "custom.align",
+                "value": "center"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "sortBy": [
+          {
+            "displayName": "unit",
+            "desc": false
+          }
+        ]
+      },
+      "transformations": [
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "__name__": true,
+              "instance": true,
+              "job": true
+            },
+            "indexByName": {},
+            "renameByName": {}
+          }
+        }
+      ],
+      "targets": [
+        {
+          "expr": "fleet_health_unit_up",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 70,
+      "type": "row",
+      "title": "NVMe Health",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 122
+      },
+      "panels": []
+    },
+    {
+      "id": 71,
+      "type": "stat",
+      "title": "Critical Warning",
+      "description": "NVMe critical_warning byte. 0 is healthy; anything else (spare low, over temperature, reliability degraded, read-only) means back up the drive. Debian's prometheus-node-exporter-collectors nvme.prom (every 15 minutes). The @aaronge/nvme-health workflow asserts on the same data from the ops serve.",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 123
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "nvme_critical_warning",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 72,
+      "type": "stat",
+      "title": "Available Spare",
+      "description": "Remaining spare capacity. The drive raises critical_warning below its own threshold (10% here); @aaronge/nvme-health fails 5 points earlier. Debian's prometheus-node-exporter-collectors nvme.prom (every 15 minutes). The @aaronge/nvme-health workflow asserts on the same data from the ops serve.",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 123
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.15
+              },
+              {
+                "color": "green",
+                "value": 0.5
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "nvme_available_spare_ratio",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 73,
+      "type": "stat",
+      "title": "Wear Used",
+      "description": "Vendor estimate of rated endurance used. @aaronge/nvme-health fails at 80%. Debian's prometheus-node-exporter-collectors nvme.prom (every 15 minutes). The @aaronge/nvme-health workflow asserts on the same data from the ops serve.",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 8,
+        "y": 123
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.6
+              },
+              {
+                "color": "red",
+                "value": 0.8
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "nvme_percentage_used_ratio",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 74,
+      "type": "stat",
+      "title": "Media Errors",
+      "description": "Lifetime unrecovered data-integrity errors. Any is bad; @aaronge/nvme-health fails on each new one. Debian's prometheus-node-exporter-collectors nvme.prom (every 15 minutes). The @aaronge/nvme-health workflow asserts on the same data from the ops serve.",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 12,
+        "y": 123
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "nvme_media_errors_total",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 75,
+      "type": "stat",
+      "title": "Unsafe Shutdowns",
+      "description": "Lifetime power losses without a clean shutdown. A rise is a power witness (also checked by power-integrity), not a drive fault. Debian's prometheus-node-exporter-collectors nvme.prom (every 15 minutes). The @aaronge/nvme-health workflow asserts on the same data from the ops serve.",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 16,
+        "y": 123
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "nvme_unsafe_shutdowns_total",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 76,
+      "type": "stat",
+      "title": "Power-On Hours",
+      "description": "Lifetime powered-on hours. Debian's prometheus-node-exporter-collectors nvme.prom (every 15 minutes). The @aaronge/nvme-health workflow asserts on the same data from the ops serve.",
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 20,
+        "y": 123
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "auto",
+        "colorMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "nvme_power_on_hours_total",
+          "refId": "A",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "type": "timeseries",
+      "title": "NVMe Temperatures",
+      "description": "Every hwmon sensor on the drive, from @aaronge/nvme-health's readTemperature (metrics-export, every 5 minutes). The drive's own warning threshold is 85°C; @aaronge/nvme-health fails at 70°C.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 129
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "nvme_health_temperature_celsius",
+          "legendFormat": "{{sensor}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 78,
+      "type": "timeseries",
+      "title": "NVMe Throughput",
+      "description": "Host read and write rates from the drive's own data-unit counters (1 unit = 512,000 bytes), averaged over 30 minutes. Sustained high writes eat into rated endurance.",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 129
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 10
+          }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "expr": "rate(nvme_data_units_written_total[30m]) * 512000",
+          "legendFormat": "write",
+          "refId": "A"
+        },
+        {
+          "expr": "rate(nvme_data_units_read_total[30m]) * 512000",
+          "legendFormat": "read",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 79,
+      "type": "stat",
+      "title": "Thermal Throttling",
+      "description": "Seconds the drive has spent thermally throttled (light = TMT1, heavy = TMT2), from @aaronge/nvme-health. Not in Debian's nvme.prom.",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 137
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "colorMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "nvme_health_thermal_throttle_seconds_total",
+          "refId": "A",
+          "instant": true,
+          "legendFormat": "{{level}}{{threshold}}"
+        }
+      ]
+    },
+    {
+      "id": 80,
+      "type": "stat",
+      "title": "Minutes Over Temperature",
+      "description": "Minutes above the drive's own warning and critical composite thresholds, from @aaronge/nvme-health. Not in Debian's nvme.prom.",
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 137
+      },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "PBFA97CFB590B2093"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "m",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "graphMode": "none",
+        "textMode": "value_and_name",
+        "colorMode": "value",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        }
+      },
+      "targets": [
+        {
+          "expr": "nvme_health_over_temperature_minutes_total",
+          "refId": "A",
+          "instant": true,
+          "legendFormat": "{{level}}{{threshold}}"
+        }
       ]
     }
   ]

@@ -26,6 +26,7 @@ target-down detection for free, which a push-based approach would give up.
 | `connect-local`     | `@aaronge/rpi-connect`         |
 | `gpio-local`        | `@aaronge/rpi-gpio-inventory`  |
 | `camera-local`      | `@aaronge/rpi-camera`          |
+| `nvme-local`        | `@aaronge/nvme-health`         |
 
 Set up via `swamp extension pull @aaronge/<name>` +
 `swamp model create @aaronge/<name> <instance>` for each row above — this
@@ -35,7 +36,7 @@ instance in the extensions' own source repos.
 The other pulled packages' workflows need these instances too:
 `washing`, `anchor` (plus the `news-secrets` vault, copied over by
 `scripts/migrate-secrets.sh`), `daily`, `my-location`, `my-host`, `loki`,
-`prom` and `unit-swamp-serve`.
+`prom`, `unit-swamp-serve` and `nvme-local`.
 
 ## Metric naming scheme
 
@@ -92,6 +93,10 @@ called `healthy` would be more confusing than useful.
 | `rpi_gpio_pin_count` | rpi-gpio-inventory | |
 | `rpi_camera_count` | rpi-camera | |
 | `rpi_camera_output_recognized` | rpi-camera | nullable |
+| `nvme_health_temperature_celsius{sensor}` | nvme-health (`readTemperature`, collected here) | every hwmon sensor (Composite, Sensor 1, …) |
+| `nvme_health_thermal_throttle_events_total{level}` / `nvme_health_thermal_throttle_seconds_total{level}` | nvme-health (`smart`, latest from its own workflow) | light/heavy throttling |
+| `nvme_health_over_temperature_minutes_total{threshold}` | nvme-health (`smart`) | minutes above the drive's warning/critical thresholds |
+| `nvme_health_write_bytes_per_day` | nvme-health (`smart` deltas) | absent when its last two readings are under 5 minutes apart |
 | `rpi_metrics_bridge_capture_age_seconds{source}` | this bridge | see Staleness below |
 
 Every array/per-item field (per-mount, per-rail, per-clock-domain,
@@ -103,6 +108,11 @@ scalar gauges and the handful of hoisted array aggregates only.
 0/false — matches this whole extension family's "null means unknown"
 convention. A blank line in Prometheus text-exposition format is legal and
 ignored, so the metric simply doesn't appear that scrape.
+
+Debian's `prometheus-node-exporter-collectors` already writes `nvme.prom`
+(spare, wear, media errors, power counters, composite temperature as
+`nvme_*`), so the `nvme_health_*` lines above export only what it lacks.
+The dashboard's NVMe Health row uses both.
 
 ## Staleness handling
 
@@ -117,7 +127,7 @@ Two layers:
    apart from "the export ran fine but one source's `readXxx` failed, so
    that source's fields are silently repeating an old value."
    `rpi_metrics_bridge_capture_age_seconds{source="<instance>"}` = `now -
-   capturedAt` for every one of the 10 sources — `max(...) > N` covers all
+   capturedAt` for every one of the 11 sources — `max(...) > N` covers all
    of them with one alert rule.
 
 ## Workflow
@@ -211,6 +221,8 @@ manual references.
 | `@aaronge/washing-forecast` | `0 6,9,12,17 * * *` | pulled package |
 | `@aaronge/github-trending` | `20 */3 * * *` | pulled package |
 | `@aaronge/package-archaeology` | `15 7 * * *` | pulled package |
+| `@aaronge/nvme-health` | `*/15 * * * *` | pulled package |
+| `@aaronge/nvme-inventory` | `30 6 * * *` | pulled package (`@aaronge/nvme-health`) |
 | `@aaronge/morning-broadcast` | `0 8 * * *` | pulled package |
 
 Schedules don't need staggering: serve queues fires that coincide and runs

@@ -30,85 +30,85 @@ jobs:
       - name: readThrottle
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: health-local
+          type: behavior
+          behavior: health-local
           methodName: readThrottle
         dependsOn: []
       - name: readClocks
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: health-local
+          type: behavior
+          behavior: health-local
           methodName: readClocks
         dependsOn: []
       - name: readPmic
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: health-local
+          type: behavior
+          behavior: health-local
           methodName: readPmic
         dependsOn: []
       - name: readFilesystems
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: host-local
+          type: behavior
+          behavior: host-local
           methodName: readFilesystems
         dependsOn: []
       - name: readThermal
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: host-local
+          type: behavior
+          behavior: host-local
           methodName: readThermal
         dependsOn: []
       - name: readLoad
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: host-local
+          type: behavior
+          behavior: host-local
           methodName: readLoad
         dependsOn: []
       - name: readMemory
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: host-local
+          type: behavior
+          behavior: host-local
           methodName: readMemory
         dependsOn: []
       - name: readEeprom
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: bootconfig-local
+          type: behavior
+          behavior: bootconfig-local
           methodName: readEeprom
         dependsOn: []
       - name: readCooling
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: cooling-local
+          type: behavior
+          behavior: cooling-local
           methodName: readCooling
         dependsOn: []
       - name: readPcie
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: pcie-local
+          type: behavior
+          behavior: pcie-local
           methodName: readPcie
         dependsOn: []
       - name: aptQuery
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: apt-local
+          type: behavior
+          behavior: apt-local
           methodName: query
         dependsOn: []
       - name: aptListUpgradable
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: apt-local
+          type: behavior
+          behavior: apt-local
           methodName: listUpgradable
         dependsOn: []
       # aptScanVulnerabilities deliberately NOT run here. It calls dpkg
@@ -125,30 +125,40 @@ jobs:
       - name: readRtc
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: rtc-local
+          type: behavior
+          behavior: rtc-local
           methodName: readRtc
         dependsOn: []
       - name: readConnect
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: connect-local
+          type: behavior
+          behavior: connect-local
           methodName: readConnect
         dependsOn: []
       - name: readGpio
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: gpio-local
+          type: behavior
+          behavior: gpio-local
           methodName: readGpio
         dependsOn: []
       - name: readCameras
         allowFailure: true
         task:
-          type: model_method
-          modelIdOrName: camera-local
+          type: behavior
+          behavior: camera-local
           methodName: readCameras
+        dependsOn: []
+      - name: readNvmeTemperature
+        # hwmon only, no root. The health log (smart) is read every 15
+        # minutes by @aaronge/nvme-health and exported from its latest data
+        # below, rather than read again here.
+        allowFailure: true
+        task:
+          type: behavior
+          behavior: nvme-local
+          methodName: readTemperature
         dependsOn: []
 
   - name: export
@@ -164,9 +174,9 @@ jobs:
     steps:
       - name: writeTextfile
         task:
-          type: model_method
-          modelType: "command/shell"
-          modelName: metrics-export-writer
+          type: behavior
+          behaviorType: "command/shell"
+          behaviorName: metrics-export-writer
           methodName: execute
           inputs:
             run: |
@@ -375,6 +385,30 @@ jobs:
                 echo "# TYPE rpi_camera_output_recognized gauge"
                 [ -n "${{ data.latest('camera-local','cameras').attributes.outputRecognized }}" ] && echo "rpi_camera_output_recognized $( [ "${{ data.latest('camera-local','cameras').attributes.outputRecognized }}" = "true" ] && echo 1 || echo 0 )"
 
+                # NVMe: only what Debian's nvme.prom collector doesn't export
+                # (it already has nvme_* spare, wear, errors, power counters
+                # and composite temperature).
+                echo "# HELP nvme_health_temperature_celsius Every NVMe hwmon temperature sensor, by label (Composite, Sensor 1, ...)."
+                echo "# TYPE nvme_health_temperature_celsius gauge"
+                sed '/^$/d' <<NVME
+              ${{ data.latest('nvme-local','temperature').attributes.sensors.filter(s, s.celsius != null).map(s, 'nvme_health_temperature_celsius{sensor="' + s.label + '"} ' + string(s.celsius)).join("\n") }}
+              NVME
+                echo "# HELP nvme_health_thermal_throttle_events_total Times the NVMe drive entered thermal throttling (light = TMT1, heavy = TMT2)."
+                echo "# TYPE nvme_health_thermal_throttle_events_total counter"
+                [ -n "${{ data.latest('nvme-local','smart').attributes.counters.thermalThrottleLightCount }}" ] && echo "nvme_health_thermal_throttle_events_total{level=\"light\"} ${{ data.latest('nvme-local','smart').attributes.counters.thermalThrottleLightCount }}"
+                [ -n "${{ data.latest('nvme-local','smart').attributes.counters.thermalThrottleHeavyCount }}" ] && echo "nvme_health_thermal_throttle_events_total{level=\"heavy\"} ${{ data.latest('nvme-local','smart').attributes.counters.thermalThrottleHeavyCount }}"
+                echo "# HELP nvme_health_thermal_throttle_seconds_total Seconds the NVMe drive has spent thermally throttled."
+                echo "# TYPE nvme_health_thermal_throttle_seconds_total counter"
+                [ -n "${{ data.latest('nvme-local','smart').attributes.counters.thermalThrottleLightSeconds }}" ] && echo "nvme_health_thermal_throttle_seconds_total{level=\"light\"} ${{ data.latest('nvme-local','smart').attributes.counters.thermalThrottleLightSeconds }}"
+                [ -n "${{ data.latest('nvme-local','smart').attributes.counters.thermalThrottleHeavySeconds }}" ] && echo "nvme_health_thermal_throttle_seconds_total{level=\"heavy\"} ${{ data.latest('nvme-local','smart').attributes.counters.thermalThrottleHeavySeconds }}"
+                echo "# HELP nvme_health_over_temperature_minutes_total Minutes the NVMe composite temperature has spent above the drive's own warning/critical thresholds."
+                echo "# TYPE nvme_health_over_temperature_minutes_total counter"
+                [ -n "${{ data.latest('nvme-local','smart').attributes.counters.warningTempMinutes }}" ] && echo "nvme_health_over_temperature_minutes_total{threshold=\"warning\"} ${{ data.latest('nvme-local','smart').attributes.counters.warningTempMinutes }}"
+                [ -n "${{ data.latest('nvme-local','smart').attributes.counters.criticalTempMinutes }}" ] && echo "nvme_health_over_temperature_minutes_total{threshold=\"critical\"} ${{ data.latest('nvme-local','smart').attributes.counters.criticalTempMinutes }}"
+                echo "# HELP nvme_health_write_bytes_per_day Host writes between the last two health readings, projected to 24 hours. Absent when readings are under 5 minutes apart."
+                echo "# TYPE nvme_health_write_bytes_per_day gauge"
+                [ -n "${{ data.latest('nvme-local','smart').attributes.deltas.writeBytesPerDay }}" ] && echo "nvme_health_write_bytes_per_day ${{ data.latest('nvme-local','smart').attributes.deltas.writeBytesPerDay }}"
+
                 echo "# HELP rpi_metrics_bridge_capture_age_seconds Seconds since each source's capturedAt. A stuck-but-still-running bridge shows this rising for one source while node_textfile_mtime_seconds stays fresh; a fully-stuck bridge shows both stale."
                 echo "# TYPE rpi_metrics_bridge_capture_age_seconds gauge"
                 v=$(age_seconds "${{ data.latest('health-local','clocks').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"health-local\"} $v"
@@ -387,6 +421,7 @@ jobs:
                 v=$(age_seconds "${{ data.latest('connect-local','connect').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"connect-local\"} $v"
                 v=$(age_seconds "${{ data.latest('gpio-local','gpio').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"gpio-local\"} $v"
                 v=$(age_seconds "${{ data.latest('camera-local','cameras').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"camera-local\"} $v"
+                v=$(age_seconds "${{ data.latest('nvme-local','smart').attributes.capturedAt }}"); [ -n "$v" ] && echo "rpi_metrics_bridge_capture_age_seconds{source=\"nvme-local\"} $v"
               } > "$TMP"
 
               chmod 644 "$TMP"

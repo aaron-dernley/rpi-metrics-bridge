@@ -1,17 +1,17 @@
 id: c8f483ec-006e-4971-b7af-fe8b5d1ed01a
 name: power-integrity
 description: >-
-  Cross-model integrity check: two independent witnesses to the same
-  underlying power problem — @aaronge/rpi-health's sticky under-voltage
-  fault bit, and its PMIC supply-rail voltage. A third witness
-  (smartctl's unsafe_shutdowns counter on the NVMe SSD, once installed —
-  most directly relevant given a 4.6W drive on a ~5W-budget PCIe slot)
-  is deliberately NOT included yet: smartctl isn't installed and there's
-  no SSD on this machine as of writing. Add a readSmart-equivalent step
-  and a third assert clause once the NVMe migration happens — see
-  @aaronge/rpi-pcie's own README for the same "build the rest once the
-  hardware exists" pattern. Scheduled every 5 minutes, matching
-  @aaronge/rpi-health's own cadence.
+  Cross-behavior integrity check: three independent witnesses to the same
+  underlying power problem. Two come from @aaronge/rpi-health: the sticky
+  under-voltage fault bit and the PMIC supply-rail voltage. The third is
+  the NVMe drive's unsafe_shutdowns counter from @aaronge/nvme-health,
+  most directly relevant given a 4.6W drive on a ~5W-budget PCIe slot.
+  That witness reads nvme-local's latest smart data, written every 15
+  minutes by @aaronge/nvme-health. It doesn't call readSmart itself, since
+  deltas are per reading and a second reader would hide increments from
+  that workflow. A new unsafe shutdown therefore fails this check for up
+  to 15 minutes. Scheduled every 5 minutes, matching @aaronge/rpi-health's
+  own cadence.
 version: 1
 tags: {}
 trigger:
@@ -31,22 +31,22 @@ jobs:
     steps:
       - name: readThrottle
         task:
-          type: model_method
-          modelIdOrName: health-local
+          type: behavior
+          behavior: health-local
           methodName: readThrottle
         dependsOn: []
       - name: readPmic
         task:
-          type: model_method
-          modelIdOrName: health-local
+          type: behavior
+          behavior: health-local
           methodName: readPmic
         dependsOn: []
 
   - name: assert
     description: >-
-      Fail the run when either power witness looks bad. Two separate
-      assert steps rather than one combined expression, so the report
-      distinguishes which witness actually fired.
+      Fail the run when any power witness looks bad. Separate assert steps
+      rather than one combined expression, so the report distinguishes
+      which witness actually fired.
     dependsOn:
       - job: collect
         condition:
@@ -77,6 +77,20 @@ jobs:
             <= minSupplyVolts=${{ inputs.minSupplyVolts }}V.
           severity: high
         dependsOn: []
+      - name: no-new-nvme-unsafe-shutdowns
+        allowFailure: false
+        task:
+          type: assert
+          expr: >-
+            data.latest("nvme-local", "smart").attributes.deltas.unsafeShutdowns == null
+            || data.latest("nvme-local", "smart").attributes.deltas.unsafeShutdowns == 0
+          message: >-
+            The NVMe drive recorded ${{ data.latest("nvme-local", "smart").attributes.deltas.unsafeShutdowns }}
+            new unsafe shutdown(s) in its latest reading (lifetime
+            ${{ data.latest("nvme-local", "smart").attributes.counters.unsafeShutdowns }}):
+            it lost power without a clean shutdown.
+          severity: high
+        dependsOn: []
 
   - name: report
     description: >-
@@ -89,14 +103,14 @@ jobs:
     steps:
       - name: summarize
         task:
-          type: model_method
-          modelType: "command/shell"
-          modelName: power-integrity-summary
+          type: behavior
+          behaviorType: "command/shell"
+          behaviorName: power-integrity-summary
           methodName: execute
           inputs:
             run: >-
               echo "power-integrity" &&
               echo "  throttle raw: ${{ data.latest('health-local', 'throttle').attributes.raw }} (sinceBoot.underVoltage=${{ data.latest('health-local', 'throttle').attributes.sinceBoot.underVoltage }})" &&
               echo "  supplyVolts: ${{ data.latest('health-local', 'pmic').attributes.supplyVolts }}V (threshold ${{ inputs.minSupplyVolts }}V)" &&
-              echo "  NOTE: smartctl unsafe_shutdowns witness not yet added -- no NVMe SSD installed"
+              echo "  NVMe unsafe shutdowns: ${{ data.latest('nvme-local', 'smart').attributes.counters.unsafeShutdowns }} lifetime, ${{ data.latest('nvme-local', 'smart').attributes.deltas.unsafeShutdowns }} new in latest reading"
         dependsOn: []

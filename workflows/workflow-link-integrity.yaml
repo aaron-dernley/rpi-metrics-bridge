@@ -18,8 +18,8 @@ jobs:
     steps:
       - name: readPcie
         task:
-          type: model_method
-          modelIdOrName: pcie-local
+          type: behavior
+          behavior: pcie-local
           methodName: readPcie
         dependsOn: []
 
@@ -53,9 +53,9 @@ jobs:
     steps:
       - name: summarize
         task:
-          type: model_method
-          modelType: "command/shell"
-          modelName: link-integrity-summary
+          type: behavior
+          behaviorType: "command/shell"
+          behaviorName: link-integrity-summary
           methodName: execute
           inputs:
             run: >-
