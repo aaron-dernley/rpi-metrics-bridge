@@ -9,8 +9,9 @@ globalArguments:
   logUnit: swamp-serve.service
   kind: service
   label: swamp-serve
-  useSudo: true
+  useSudo: false
   systemctlPath: systemctl
   journalctlPath: journalctl
   sudoPath: sudo
+  scope: user
 methods: {}
